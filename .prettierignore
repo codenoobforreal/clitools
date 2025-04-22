@@ -1,0 +1,10 @@
+# Ignore artifacts:
+build
+dist
+coverage
+
+# npm
+package-lock.json
+
+# pnpm
+pnpm-lock.yaml
