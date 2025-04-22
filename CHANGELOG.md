@@ -1,5 +1,11 @@
 # @codenoobforreal/clitools
 
+## 0.0.3
+
+### Patch Changes
+
+- e4dd9e1: fix ci
+
 ## 0.0.2
 
 ### Patch Changes
