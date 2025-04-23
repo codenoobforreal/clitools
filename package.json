@@ -1,11 +1,18 @@
 {
   "name": "@codenoobforreal/clitools",
   "version": "0.0.3",
-  "description": "scripts for personal tasks",
+  "description": "CLI tool for batch H.265 video encoding with adaptive bitrate filtering using FFmpeg",
   "keywords": [
-    "nodejs",
+    "cli",
+    "video-encoding",
+    "h265",
+    "hevc",
     "ffmpeg",
-    "scripts"
+    "video-processing",
+    "batch-processing",
+    "bitrate-filter",
+    "transcoding",
+    "automation"
   ],
   "homepage": "https://github.com/codenoobforreal/clitools",
   "type": "module",
@@ -15,7 +22,10 @@
     "clitools": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "README.md",
+    "README.zh-CN.md"
   ],
   "publishConfig": {
     "access": "public",
@@ -31,10 +41,10 @@
     "build": "tsc",
     "start": "tsx src/index.ts",
     "test": "vitest run --coverage",
-    "format-write": "prettier --write . --ignore-unknown",
-    "format-check": "prettier --check . --ignore-unknown",
+    "format": "prettier --write . --ignore-unknown",
+    "format:check": "prettier --check . --ignore-unknown",
     "lint": "eslint .",
-    "ci": "pnpm run format-check && pnpm run test && pnpm run lint && pnpm run build",
+    "ci": "pnpm run format:check && pnpm run test && pnpm run lint && pnpm run build",
     "knip": "knip",
     "prepare": "node .husky/install.mjs",
     "lint-staged": "lint-staged",
@@ -72,7 +82,7 @@
     "sharp": "^0.33.5"
   },
   "lint-staged": {
-    "**/*": "prettier --check --ignore-unknown",
+    "*.{js,ts,json,md}": "prettier --check --ignore-unknown",
     "src/**/*.ts": "eslint"
   },
   "config": {
