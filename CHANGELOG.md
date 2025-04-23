@@ -1,5 +1,11 @@
 # @codenoobforreal/clitools
 
+## 0.2.0
+
+### Minor Changes
+
+- 85ae9a9: bump version to solve previously published version "0.1.0" error
+
 ## 0.1.0
 
 ### Minor Changes
