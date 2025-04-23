@@ -1,5 +1,15 @@
 # @codenoobforreal/clitools
 
+## 0.1.0
+
+### Minor Changes
+
+- 637e296: bitrate filter removal
+
+### Patch Changes
+
+- f23f2fb: remove bitrate filter related docs
+
 ## 0.0.4
 
 ### Patch Changes
