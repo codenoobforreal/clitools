@@ -35,17 +35,17 @@ export async function processVideoEncodeTask({
     const videoEncodeInfoList: VideoEncodeInfo[] =
       await getMetadataToVideoList(collectedVideoPaths);
 
-    const videoEncodeInfoListLenght = videoEncodeInfoList.length;
+    const videoEncodeInfoListLength = videoEncodeInfoList.length;
     // TODO: scan error class
-    if (videoEncodeInfoListLenght === 0) {
+    if (videoEncodeInfoListLength === 0) {
       throw new Error("no video to process");
     }
 
-    for (let index = 0; index < videoEncodeInfoListLenght; index++) {
+    for (let index = 0; index < videoEncodeInfoListLength; index++) {
       const videoInfo = videoEncodeInfoList[index];
       if (videoInfo !== undefined) {
         log.message(
-          `processing ${index + 1}/${videoEncodeInfoListLenght}:\n${videoInfo.input}`,
+          `processing ${index + 1}/${videoEncodeInfoListLength}:\n${videoInfo.input}`,
         );
         const result = await encodeVideo(videoInfo);
         if (result) {
