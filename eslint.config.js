@@ -4,8 +4,17 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 export default defineConfig([
-  { ignores: ["dist", "coverage"] },
-  { files: ["src/**/*.ts"], languageOptions: { globals: globals.node } },
-  { files: ["src/**/*.js"], plugins: { js }, extends: ["js/recommended"] },
+  {
+    ignores: ["dist", "coverage"],
+  },
+  {
+    files: ["**/*.{js,ts}"],
+    plugins: { js },
+    extends: ["js/recommended"],
+  },
+  {
+    files: ["**/*.{js,ts}"],
+    languageOptions: { globals: globals.node },
+  },
   tseslint.configs.recommended,
 ]);

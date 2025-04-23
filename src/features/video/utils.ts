@@ -4,7 +4,6 @@ import os from "node:os";
 import path from "node:path";
 import pLimit from "p-limit";
 import { SUPPORT_VIDEO_EXT } from "../../constants.js";
-import type { VideoEncodeInfo } from "../../types.js";
 import {
   getCurrentDateTime,
   getFileNameFromPath,
@@ -107,28 +106,4 @@ export function calculateCrfByPixelCount(pixelCount: number): number {
 
   const threshold = CRF_THRESHOLDS.find((t) => pixelCount >= t.pixelCount);
   return threshold?.crf ?? 18;
-}
-
-export function filterHighBitrateVideos(info: VideoEncodeInfo): boolean {
-  const { metadata } = info;
-  const { width, height, bit_rate } = metadata;
-  const pixels = width * height;
-
-  const BITRATE_THRESHOLDS = [
-    { pixels: 8_294_400, maxBitrate: 20 }, // 4K 15-25
-    { pixels: 3_686_400, maxBitrate: 15 }, // 2K 12-18
-    { pixels: 2_073_600, maxBitrate: 13 }, // 1080p 10-16
-    { pixels: 921_600, maxBitrate: 5 }, // 720p 4-6
-    { pixels: 0, maxBitrate: 2.25 }, // lower 720p 1.5-3
-  ];
-
-  const bitRateInMbps = convertBitrateToMbps(bit_rate);
-
-  for (const { pixels: thresholdPixels, maxBitrate } of BITRATE_THRESHOLDS) {
-    if (pixels >= thresholdPixels) {
-      return bitRateInMbps > maxBitrate;
-    }
-  }
-
-  return bitRateInMbps > 2.25;
 }

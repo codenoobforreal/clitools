@@ -4,7 +4,7 @@ import { isImageFile } from "../../utils.js";
 
 export async function getAllSupportImagesFromPath(dir: string) {
   const exts = SUPPORT_IMAGE_EXT.join(",");
-  const files = await glob(`**/*.\{${exts}\}`, {
+  const files = await glob(`**/*.{${exts}}`, {
     nodir: true,
     cwd: dir,
     withFileTypes: true,

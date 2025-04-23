@@ -1,7 +1,6 @@
 import { glob, type Path } from "glob";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { SUPPORT_VIDEO_EXT } from "../../constants";
-import type { VideoEncodeInfo } from "../../types";
 import {
   getCurrentDateTime,
   getFileNameFromPath,
@@ -11,7 +10,6 @@ import {
   calculateCrfByPixelCount,
   collectSupportedVideoFilesFromDirectory,
   convertBitrateToMbps,
-  filterHighBitrateVideos,
   getVideoOutputPath,
 } from "./utils";
 
@@ -182,52 +180,5 @@ describe("calculateCrfByPixelCount", () => {
     expect(calculateCrfByPixelCount(8_294_400)).toBe(22);
     expect(calculateCrfByPixelCount(2_073_600)).toBe(20);
     expect(calculateCrfByPixelCount(921_600)).toBe(19);
-  });
-});
-
-describe("filterHighBitrateVideos", () => {
-  const createTestInfo = (
-    width: number,
-    height: number,
-    bitRate: number,
-  ): VideoEncodeInfo => ({
-    input: "",
-    metadata: {
-      width,
-      height,
-      bit_rate: bitRate,
-      avg_frame_rate: 0,
-      duration: 0,
-    },
-  });
-
-  test("should flag 4K videos over 20Mbps", () => {
-    const testInfo = createTestInfo(3840, 2160, 21_000_000);
-    expect(filterHighBitrateVideos(testInfo)).toBe(true);
-  });
-
-  test("should accept 4K videos at 20Mbps threshold", () => {
-    const testInfo = createTestInfo(3840, 2160, 20_000_000);
-    expect(filterHighBitrateVideos(testInfo)).toBe(false);
-  });
-
-  test("should handle 1080p video thresholds", () => {
-    const overInfo = createTestInfo(1920, 1080, 14_000_000);
-    const underInfo = createTestInfo(1920, 1080, 12_000_000);
-    expect(filterHighBitrateVideos(overInfo)).toBe(true);
-    expect(filterHighBitrateVideos(underInfo)).toBe(false);
-  });
-
-  test("should handle low resolution videos", () => {
-    const testInfo = createTestInfo(640, 480, 3_000_000);
-    expect(filterHighBitrateVideos(testInfo)).toBe(true);
-    expect(filterHighBitrateVideos(createTestInfo(640, 480, 2_250_000))).toBe(
-      false,
-    );
-  });
-
-  test("should handle edge case rounding conversions", () => {
-    const testInfo = createTestInfo(1280, 720, 1_250_000);
-    expect(filterHighBitrateVideos(testInfo)).toBe(false); // 1.3 <= 5
   });
 });
