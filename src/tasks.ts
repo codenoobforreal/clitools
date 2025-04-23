@@ -2,6 +2,7 @@ import { log } from "@clack/prompts";
 import os from "node:os";
 import process from "node:process";
 import pLimit from "p-limit";
+import { checkFFmpegInstallation } from "./features/ffmpeg/check-install.js";
 import { encodeVideo } from "./features/video/encode.js";
 import { getVideoMetaData as getVideoMetadata } from "./features/video/metadata.js";
 import {
@@ -24,6 +25,8 @@ export async function processVideoEncodeTask({
   filterHighBitrateMode,
 }: ProcessVideoEncodeTaskProps) {
   try {
+    checkFFmpegInstallation();
+
     const sanitizedPath = sanitizeUserInput(input);
     const normalizedPath = await resolveAndNormalizePath(
       sanitizedPath,
