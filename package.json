@@ -44,7 +44,7 @@
     "format": "prettier --write . --ignore-unknown",
     "format:check": "prettier --check . --ignore-unknown",
     "lint": "eslint .",
-    "ci": "pnpm run format:check && pnpm run test && pnpm run lint && pnpm run build",
+    "ci": "pnpm run format:check && pnpm run lint && pnpm run test && pnpm run build",
     "knip": "knip",
     "prepare": "node .husky/install.mjs",
     "lint-staged": "lint-staged",
