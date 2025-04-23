@@ -1,7 +1,7 @@
 {
   "name": "@codenoobforreal/clitools",
   "version": "0.0.4",
-  "description": "CLI tool for batch H.265 video encoding with with recommended quality settings using FFmpeg",
+  "description": "CLI tool for batch H.265 video encoding with recommended quality settings using FFmpeg",
   "keywords": [
     "cli",
     "video-encoding",
