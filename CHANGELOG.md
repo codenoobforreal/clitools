@@ -1,5 +1,11 @@
 # @codenoobforreal/clitools
 
+## 0.0.4
+
+### Patch Changes
+
+- 2b32c4d: add FFmpeg check,improve docs.
+
 ## 0.0.3
 
 ### Patch Changes
