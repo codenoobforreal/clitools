@@ -14,7 +14,7 @@ npx @codenoobforreal/clitools
 
 ### Video Encoding
 
-Batch video encoding to `H.265/HEVC` format with adaptive bitrate filtering,requires `ffmpeg`.
+Batch video encoding to `H.265/HEVC` format with [recommended quality settings](https://handbrake.fr/docs/en/1.9.0/workflow/adjust-quality.html).
 
 Currently supports: Video Encoding (`H.265`)
 
@@ -25,19 +25,6 @@ Currently supports: Video Encoding (`H.265`)
 ##### ​Input Source​
 
 Provide a video file path ​OR​ a folder containing multiple videos.
-​
-
-##### Bitrate Filter​
-
-Filter videos below recommended bitrates:
-
-- 4K+: 20 Mbps
-- 2K: 15 Mbps
-- 1080p: 13 Mbps
-- 720p: 5 Mbps
-- Others: 2.25 Mbps
-
-Choose No to disable filtering.
 
 ##### Confirmation​
 
