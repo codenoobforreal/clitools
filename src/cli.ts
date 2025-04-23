@@ -23,10 +23,6 @@ async function askForVideoEncodeAnswer(): Promise<ProcessVideoEncodeTaskProps> {
           placeholder: "Video path or a folder of videos",
           defaultValue: ".",
         }),
-      filterHighBitrateMode: () =>
-        confirm({
-          message: "Do you want to filter high bitrate videos",
-        }),
     },
     {
       onCancel: () => {

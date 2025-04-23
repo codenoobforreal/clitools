@@ -12,7 +12,7 @@ npx @codenoobforreal/clitools
 
 ### 视频编码
 
-支持批量视频转码为 `H.265/HEVC` 格式，并带有自适应码率过滤功能，需要 `FFmpeg`。
+支持批量视频转码为 `H.265/HEVC` 格式，并基于[推荐的质量设置](https://handbrake.fr/docs/en/1.9.0/workflow/adjust-quality.html)。
 
 当前支持视频编码（ `H.265` ）
 
@@ -23,19 +23,6 @@ npx @codenoobforreal/clitools
 ##### ​输入源
 
 提供视频文件路径或包含多个视频的文件夹路径。
-
-##### 码率过滤​
-
-过滤低于推荐码率的视频：
-
-- 4K+: 20 Mbps
-- 2K: 15 Mbps
-- 1080p: 13 Mbps
-- 720p: 5 Mbps
-- 其他分辨率: 2.25 Mbps
-
-选择否可禁用过滤。
-​
 
 ##### 确认操作​
 

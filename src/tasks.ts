@@ -5,10 +5,7 @@ import pLimit from "p-limit";
 import { checkFFmpegInstallation } from "./features/ffmpeg/check-install.js";
 import { encodeVideo } from "./features/video/encode.js";
 import { getVideoMetaData as getVideoMetadata } from "./features/video/metadata.js";
-import {
-  collectSupportedVideoFilesFromDirectory,
-  filterHighBitrateVideos,
-} from "./features/video/utils.js";
+import { collectSupportedVideoFilesFromDirectory } from "./features/video/utils.js";
 import {
   isErrnoException,
   type ProcessVideoEncodeTaskProps,
@@ -22,7 +19,6 @@ import {
 
 export async function processVideoEncodeTask({
   input,
-  filterHighBitrateMode,
 }: ProcessVideoEncodeTaskProps) {
   try {
     checkFFmpegInstallation();
@@ -39,22 +35,17 @@ export async function processVideoEncodeTask({
     const videoEncodeInfoList: VideoEncodeInfo[] =
       await getMetadataToVideoList(collectedVideoPaths);
 
-    const filteredVideos = filterVideosByBitrateCondition(
-      videoEncodeInfoList,
-      filterHighBitrateMode,
-    );
-
-    const filteredVideosLength = filteredVideos.length;
+    const videoEncodeInfoListLength = videoEncodeInfoList.length;
     // TODO: scan error class
-    if (filteredVideosLength === 0) {
+    if (videoEncodeInfoListLength === 0) {
       throw new Error("no video to process");
     }
 
-    for (let index = 0; index < filteredVideosLength; index++) {
-      const videoInfo = filteredVideos[index];
+    for (let index = 0; index < videoEncodeInfoListLength; index++) {
+      const videoInfo = videoEncodeInfoList[index];
       if (videoInfo !== undefined) {
         log.message(
-          `processing ${index + 1}/${filteredVideosLength}:\n${videoInfo.input}`,
+          `processing ${index + 1}/${videoEncodeInfoListLength}:\n${videoInfo.input}`,
         );
         const result = await encodeVideo(videoInfo);
         if (result) {
@@ -75,15 +66,6 @@ export async function processVideoEncodeTask({
       console.log(error);
     }
   }
-}
-
-function filterVideosByBitrateCondition(
-  videos: VideoEncodeInfo[],
-  filterOption: boolean,
-) {
-  return filterOption
-    ? videos.filter((info) => filterHighBitrateVideos(info))
-    : videos;
 }
 
 async function getMetadataToVideoList(videoPaths: string[]) {

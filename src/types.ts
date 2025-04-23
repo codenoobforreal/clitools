@@ -33,7 +33,6 @@ export type ArbitraryObject = { [key: string]: unknown };
 
 export interface ProcessVideoEncodeTaskProps {
   input: string;
-  filterHighBitrateMode: boolean;
 }
 
 export interface ProgressInfo {
