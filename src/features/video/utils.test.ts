@@ -62,24 +62,29 @@ describe("getMetadataToVideoList", () => {
       .mockRejectedValueOnce(new Error("Corrupted file"))
       .mockResolvedValueOnce(mockMetadata);
 
-    const consoleSpy = vi.spyOn(console, "error");
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     const results = await getMetadataToVideoList(mockVideoPaths);
 
     expect(results).toHaveLength(2);
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining("Corrupted file"),
     );
+
+    consoleSpy.mockRestore();
   });
 
   test("should enhance error messages with video path", async () => {
     const testError = new Error("Test error");
     vi.mocked(getVideoMetadata).mockRejectedValue(testError);
 
-    const consoleError = vi.spyOn(console, "error");
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
     await expect(getMetadataToVideoList(["error.mp4"])).resolves.toEqual([]);
-    expect(consoleError).toHaveBeenCalledWith(
+    expect(consoleSpy).toHaveBeenCalledWith(
       "Processing failed: [error.mp4] Test error",
     );
+
+    consoleSpy.mockRestore();
   });
 
   test("should respect concurrency limit", async () => {

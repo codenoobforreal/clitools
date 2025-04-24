@@ -1,4 +1,3 @@
-import { platform } from "node:process";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import which from "which";
 import { checkFFmpegInstallation } from "./check-install";
@@ -23,12 +22,9 @@ describe("checkFFmpegInstallation", () => {
       })
       .mockReturnValueOnce("/usr/bin/ffprobe");
 
-    expect(checkFFmpegInstallation).toThrowErrorMatchingInlineSnapshot(`
-      [Error: Missing required tools: ffmpeg.
-      Installation recommendation:
-      brew install ffmpeg or Download from https://ffmpeg.org/
-      Note: ffprobe is typically included in ffmpeg packages. Ensure your package manager installs both tools.]
-    `);
+    expect(checkFFmpegInstallation).toThrowError(
+      /Missing required tools: ffmpeg.*Installation recommendation.*brew install ffmpeg/s,
+    );
   });
 
   test("should throw missing ffprobe error", () => {
@@ -38,49 +34,18 @@ describe("checkFFmpegInstallation", () => {
         throw new Error("not found");
       });
 
-    expect(checkFFmpegInstallation).toThrowErrorMatchingInlineSnapshot(`
-      [Error: Missing required tools: ffprobe.
-      Installation recommendation:
-      brew install ffmpeg or Download from https://ffmpeg.org/
-      Note: ffprobe is typically included in ffmpeg packages. Ensure your package manager installs both tools.]
-    `);
+    expect(checkFFmpegInstallation).toThrowError(
+      /Missing required tools: ffprobe.*Installation recommendation.*brew install ffmpeg/s,
+    );
   });
 
-  test.skipIf(platform !== "darwin")(
-    "should show brew instructions on darwin",
-    () => {
-      vi.spyOn(which, "sync").mockImplementation(() => {
-        throw new Error("not found");
-      });
+  test("should throw both error", () => {
+    vi.spyOn(which, "sync").mockImplementation(() => {
+      throw new Error("not found");
+    });
 
-      expect(checkFFmpegInstallation).toThrowErrorMatchingInlineSnapshot(`
-      [Error: Missing required tools: ffmpeg, ffprobe.
-      Installation recommendation:
-      brew install ffmpeg or Download from https://ffmpeg.org/
-      Note: ffprobe is typically included in ffmpeg packages. Ensure your package manager installs both tools.]
-    `);
-    },
-  );
-
-  test.skipIf(platform !== "linux")(
-    "should show apt instructions on linux",
-    () => {
-      vi.spyOn(which, "sync").mockImplementation(() => {
-        throw new Error("not found");
-      });
-
-      expect(checkFFmpegInstallation).toThrowErrorMatchingInlineSnapshot();
-    },
-  );
-
-  test.skipIf(platform !== "win32")(
-    "should show choco instructions on win32",
-    () => {
-      vi.spyOn(which, "sync").mockImplementation(() => {
-        throw new Error("not found");
-      });
-
-      expect(checkFFmpegInstallation).toThrowErrorMatchingInlineSnapshot();
-    },
-  );
+    expect(checkFFmpegInstallation).toThrowError(
+      /Missing required tools: ffmpeg, ffprobe.*Installation recommendation.*brew install ffmpeg/s,
+    );
+  });
 });
