@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import process from "node:process";
 import { getTaskDetail } from "./features/cli/cli.js";
 import { askForContinue } from "./features/cli/prompt.js";
 import {
@@ -38,6 +37,5 @@ async function main() {
     } else {
       console.log(error);
     }
-  }
   }
 }
