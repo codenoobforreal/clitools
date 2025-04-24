@@ -2,10 +2,9 @@
 import type { ProgressInfo } from "../../types.js";
 import { formatSeconds } from "../../utils.js";
 
-
 export function createProgressHandler(totalDuration: number) {
   let lastUpdate = 0;
-  let remaining = Infinity; // Initialize to Infinity in the closure
+  let remaining = 0; // Initialize remaining as 0 in the closure
   // const p = progress({ max: 100 });
   return (progress: ProgressInfo) => {
     if (!progress.out_time_ms || progress.speed === undefined) return;
@@ -23,8 +22,8 @@ export function createProgressHandler(totalDuration: number) {
     const currentTime = progress.out_time_ms / 1_000_000;
     percentage = Math.min(99.99, (currentTime / totalDuration) * 100);
 
-    let remaining = 0;
-    if (percentage > 0) {
+    // Only update remaining when we have valid progress values
+    if (percentage > 0 && progress.speed > 0) {
       const current = progress.out_time_ms / 1_000_000;
       remaining = Math.max(
         0,
