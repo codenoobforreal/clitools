@@ -10,28 +10,29 @@ pnpm dlx @codenoobforreal/clitools
 npx @codenoobforreal/clitools
 ```
 
-### 视频编码
+## 功能特性
 
-支持批量视频转码为 `H.265/HEVC` 格式，并基于[推荐的质量设置](https://handbrake.fr/docs/en/1.9.0/workflow/adjust-quality.html)。
+### 视频编码与压缩
 
-当前支持视频编码（ `H.265` ）
+- ​**高效H.265/HEVC转换**​：通过FFmpeg使用[HandBrake推荐质量设置](https://handbrake.fr/docs/en/1.9.0/workflow/adjust-quality.html)批量编码视频至H.265格式
+- 预设参数：当前支持H.265视频编码
 
-[此任务需要全局安装 `ffmpeg`。](#ffmpeg-install-guide)
+**环境依赖**​：  
+本功能需要安装 [FFmpeg](https://ffmpeg.org)  
+[安装指南](#ffmpeg-installation-guide)
 
-#### 工作流程
+### QuickTime兼容性修复
 
-##### ​输入源
+- ​**无损转换**​：批量将H.265视频重新封装为QuickTime兼容形式，无需重新编码
 
-提供视频文件路径或包含多个视频的文件夹路径。
+​**环境依赖**​：  
+本功能需要安装 [FFmpeg](https://ffmpeg.org)  
+[安装指南](#ffmpeg-installation-guide)
 
-##### 确认操作​
+## 输出规范
 
-检查配置并确认开始编码，选择否退出任务。
-
-#### 输出路径
-
-编码后的视频保存在​输入源相同目录​。
-示例：`~/Videos/input.mp4 → ~/Videos/input-20250101.mp4`
+处理后的文件将保存在**原始目录**中，并添加时间戳后缀：  
+`/path/to/input.mp4` → `/path/to/input-20231010120000.mp4`
 
 ## FFmpeg 安装指南 <a id="ffmpeg-install-guide"></a>
 

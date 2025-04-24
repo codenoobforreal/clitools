@@ -39,7 +39,7 @@
     "dev": "vitest",
     "build": "tsc",
     "start": "tsx src/index.ts",
-    "test": "vitest run --coverage",
+    "test": "vitest run",
     "format": "prettier --write . --ignore-unknown",
     "format:check": "prettier --check . --ignore-unknown",
     "lint": "eslint .",

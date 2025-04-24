@@ -4,7 +4,7 @@ import {
   runFFprobeCommand,
 } from "../ffmpeg/commands.js";
 
-export async function getVideoMetaData(
+export async function getVideoMetadata(
   videoPath: string,
 ): Promise<FFprobeResultConvertResult | null> {
   const getVideoMetaDataArgs = buildFFprobeMetadataArgs(videoPath);
@@ -58,6 +58,10 @@ export function convertFFprobeResult(
     const [key, value] = parseKeyValue(trimmed);
 
     switch (key) {
+      case "codec_name":
+      case "codec_tag_string":
+        resultObject[key] = value;
+        break;
       case "width":
       case "height":
       case "duration":
@@ -71,20 +75,6 @@ export function convertFFprobeResult(
         break;
     }
   }
-
-  const requiredKeys: (keyof FFprobeResultConvertResult)[] = [
-    "width",
-    "height",
-    "avg_frame_rate",
-    "duration",
-    "bit_rate",
-  ];
-
-  requiredKeys.forEach((key) => {
-    if (resultObject[key] === undefined || Number.isNaN(resultObject[key])) {
-      throw new Error(`Missing or invalid required field: ${key}`);
-    }
-  });
 
   return resultObject as FFprobeResultConvertResult;
 }

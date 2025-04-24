@@ -7,41 +7,32 @@ import {
 import {
   calcFFprobeFps,
   convertFFprobeResult,
-  getVideoMetaData,
+  getVideoMetadata,
 } from "./metadata";
 
-vi.mock("../ffmpeg/commands", async () => {
-  const originalModule =
-    await vi.importActual<typeof import("../ffmpeg/commands")>(
-      "../ffmpeg/commands",
-    );
-  return {
-    ...originalModule,
-    buildFFprobeMetadataArgs: vi.fn(),
-    runFFprobeCommand: vi.fn(),
-  };
+vi.mock("../ffmpeg/commands", () => ({
+  buildFFprobeMetadataArgs: vi.fn(),
+  runFFprobeCommand: vi.fn(),
+}));
+
+beforeEach(() => {
+  vi.clearAllMocks();
 });
 
 describe("convertFFprobeResult", () => {
   test("should correctly parse all expected fields", () => {
-    const input = `width=720\nheight=480\nduration=100.5\nnb_frames=2400\navg_frame_rate=24/1\nbit_rate=1`;
+    const input = `codec_name=hevc\ncodec_tag_string=hev1\nwidth=720\nheight=480\nduration=100.5\nnb_frames=2400\navg_frame_rate=24/1\nbit_rate=1`;
     const expected: FFprobeResultConvertResult = {
       width: 720,
       height: 480,
       duration: 100.5,
       avg_frame_rate: 24,
       bit_rate: 1,
+      codec_name: "hevc",
+      codec_tag_string: "hev1",
     };
     const result = convertFFprobeResult(input);
     expect(result).toEqual(expected);
-  });
-  test("should throw error for missing fields", () => {
-    const input = `height=480\nduration=100.5\navg_frame_rate=24/1`;
-    expect(() => {
-      convertFFprobeResult(input);
-    }).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Missing or invalid required field: width]`,
-    );
   });
   test("should throw error for Empty key", () => {
     const input = "=210";
@@ -61,11 +52,7 @@ describe("convertFFprobeResult", () => {
   });
 });
 
-describe("getVideoMetaData", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
+describe("getVideoMetadata", () => {
   test("should return converted result on valid output", async () => {
     const mockOutput = [
       "width=1920",
@@ -73,15 +60,20 @@ describe("getVideoMetaData", () => {
       "avg_frame_rate=24/1",
       "duration=10.0",
       "bit_rate=5",
+      "codec_name=hevc",
+      "codec_tag_string=hev1",
     ].join("\n");
 
     vi.mocked(runFFprobeCommand).mockResolvedValue({
       out: mockOutput,
       err: "",
     });
-    const result = await getVideoMetaData("valid.mp4");
+
+    const result = await getVideoMetadata("valid.mp4");
 
     expect(result).toEqual({
+      codec_name: "hevc",
+      codec_tag_string: "hev1",
       width: 1920,
       height: 1080,
       avg_frame_rate: 24,
@@ -93,7 +85,7 @@ describe("getVideoMetaData", () => {
   test("should return null when runFFprobeCommand return undefined", async () => {
     const videoPath = "./nonexistent.mp4";
     vi.mocked(runFFprobeCommand).mockResolvedValue(undefined);
-    await expect(getVideoMetaData(videoPath)).resolves.toBeNull();
+    await expect(getVideoMetadata(videoPath)).resolves.toBeNull();
     expect(buildFFprobeMetadataArgs).toHaveBeenCalled();
   });
 
@@ -104,7 +96,7 @@ describe("getVideoMetaData", () => {
     }));
     const videoPath = "./test.mp4";
     await expect(
-      getVideoMetaData(videoPath),
+      getVideoMetadata(videoPath),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: ffprobe error]`);
     expect(buildFFprobeMetadataArgs).toHaveBeenCalled();
   });

@@ -12,28 +12,25 @@ pnpm dlx @codenoobforreal/clitools
 npx @codenoobforreal/clitools
 ```
 
-### Video Encoding
+### Video Encoding & Compression
 
-Batch video encoding to `H.265/HEVC` format with [recommended quality settings](https://handbrake.fr/docs/en/1.9.0/workflow/adjust-quality.html).
+- ​**Efficient H.265/HEVC Conversion**: Batch encode videos to H.265 format using [HandBrake's recommended quality settings](https://handbrake.fr/docs/en/1.9.0/workflow/adjust-quality.html) via FFmpeg.
+- ​**Preset Support**: Currently optimized for H.265 video encoding.
 
-Currently supports: Video Encoding (`H.265`)
+**Dependency**:  
+This feature requires [FFmpeg](https://ffmpeg.org) to be installed.[Installation Guide](#ffmpeg-installation-guide)
 
-[You need `ffmpeg` installed globally for this task.](#ffmpeg-installation-guide)
+### QuickTime Compatibility Patch
 
-#### Workflow
+- ​**Zero-Quality-Loss Conversion**: Batch remux H.265 videos to QuickTime-friendly form without re-encoding.
 
-##### ​Input Source​
+❗ ​**Dependency**:  
+This feature requires [FFmpeg](https://ffmpeg.org) to be installed.[Installation Guide](#ffmpeg-installation-guide)
 
-Provide a video file path ​OR​ a folder containing multiple videos.
+## Output Structure
 
-##### Confirmation​
-
-Confirm to start encoding,cancel to exit process.
-
-#### Output
-
-Encoded videos are saved in the ​same directory​ as the input source.
-Example: `~/Videos/input.mp4 → ~/Videos/input-20250101.mp4`
+Processed files will be saved in the ​**source directory**​ with a timestamp suffix:  
+`/path/to/input.mp4` → `/path/to/input-20231010120000.mp4`
 
 ## FFmpeg Installation Guide <a id="ffmpeg-install-guide"></a>
 
