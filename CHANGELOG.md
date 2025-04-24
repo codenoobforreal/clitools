@@ -1,5 +1,11 @@
 # @codenoobforreal/clitools
 
+## 0.3.0
+
+### Minor Changes
+
+- 7fd6acd: Added a batch process to enable QuickTime compatibility for H.265/HEVC videos without re-encoding
+
 ## 0.2.0
 
 ### Minor Changes
