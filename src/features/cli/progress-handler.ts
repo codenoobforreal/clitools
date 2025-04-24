@@ -1,8 +1,11 @@
+
 import type { ProgressInfo } from "../../types.js";
 import { formatSeconds } from "../../utils.js";
 
+
 export function createProgressHandler(totalDuration: number) {
   let lastUpdate = 0;
+  let remaining = Infinity; // Initialize to Infinity in the closure
   // const p = progress({ max: 100 });
   return (progress: ProgressInfo) => {
     if (!progress.out_time_ms || progress.speed === undefined) return;
