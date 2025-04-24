@@ -38,7 +38,6 @@ async function main() {
     } else {
       console.log(error);
     }
-  } finally {
-    process.exit(0);
+  }
   }
 }
