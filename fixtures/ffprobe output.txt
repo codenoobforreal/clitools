@@ -1,9 +1,17 @@
 index=0
+
+# ffmpeg -encoders | grep '^ V' (check all the codec)
 codec_name=hevc
+
 codec_long_name=H.265 / HEVC (High Efficiency Video Coding)
 profile=Main
 codec_type=video
+
+# FourCC
+# H264-avc1 | H265-hev1(official) or H265-hvc1(less support) | VP9-vp09
+# ffmpeg -i input_hev1.mp4 -c:v copy -tag:v hvc1 output_hvc1.mp4 (support apple QuickTime for H265 codec without re-encode)
 codec_tag_string=hev1
+
 codec_tag=0x31766568
 width=7680
 height=4086

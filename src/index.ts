@@ -1,20 +1,44 @@
 #!/usr/bin/env node
 
-import { getTaskDetail } from "./cli.js";
-import { processVideoEncodeTask } from "./tasks.js";
+import process from "node:process";
+import { getTaskDetail } from "./features/cli/cli.js";
+import { askForContinue } from "./features/cli/prompt.js";
+import {
+  processHEVCEnableQuickTimeTask,
+  processVideoEncodeTask,
+} from "./features/cli/tasks.js";
+import { isErrnoException } from "./types.js";
 
 main();
 
 async function main() {
   try {
-    const { shouldContinue, task, answer } = await getTaskDetail();
+    const { task, answer } = await getTaskDetail();
+    const shouldContinue = await askForContinue();
     if (!shouldContinue) {
       return;
     }
-    if (task === "video-encode") {
-      await processVideoEncodeTask(answer);
+    switch (task) {
+      case "video-encode":
+        await processVideoEncodeTask(answer);
+        break;
+      case "hevc-enable-QuickTime":
+        await processHEVCEnableQuickTimeTask(answer);
+        break;
     }
   } catch (error) {
-    console.log(error);
+    // ENOENT	No such file or directory
+    // EACCES	Permission denied
+    // ENAMETOOLONG	File name too long
+    // ELOOP	Symbolic link loop
+    if (isErrnoException(error)) {
+      if (error.code === "ENOENT") {
+        console.log(`no such path:\n${error.path}`);
+      }
+    } else {
+      console.log(error);
+    }
+  } finally {
+    process.exit(0);
   }
 }

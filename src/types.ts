@@ -35,6 +35,10 @@ export interface ProcessVideoEncodeTaskProps {
   input: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ProcessHEVCEnableQuickTimeTaskProps
+  extends ProcessVideoEncodeTaskProps {}
+
 export interface ProgressInfo {
   frames?: number;
   fps?: number;
@@ -51,12 +55,14 @@ export interface ProgressInfo {
   progress?: "continue" | "end";
 }
 
-export interface VideoEncodeInfo {
+export interface VideoInfo {
   input: string;
   metadata: FFprobeResultConvertResult;
 }
 
 export interface FFprobeResultConvertResult {
+  codec_name: string;
+  codec_tag_string: string;
   width: number;
   height: number;
   avg_frame_rate: number;

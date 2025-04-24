@@ -4,15 +4,29 @@ import os from "node:os";
 import path from "node:path";
 import pLimit from "p-limit";
 import { SUPPORT_VIDEO_EXT } from "../../constants.js";
+import type { VideoInfo } from "../../types.js";
 import {
   getCurrentDateTime,
   getFileNameFromPath,
+  isPathDirectory,
   isVideoFile,
 } from "../../utils.js";
+import { getVideoMetadata } from "./metadata.js";
 
-export async function collectSupportedVideoFilesFromDirectory(
-  directoryPath: string,
-) {
+export async function collectVideoFilesFromPath(path: string) {
+  const isDirectory = await isPathDirectory(path);
+  const collectedVideoPaths: string[] = [];
+  if (!isDirectory) {
+    collectedVideoPaths.push(path);
+  } else {
+    const videosInDirectory =
+      await collectSupportedVideoFilesFromDirectory(path);
+    collectedVideoPaths.push(...videosInDirectory);
+  }
+  return collectedVideoPaths;
+}
+
+async function collectSupportedVideoFilesFromDirectory(directoryPath: string) {
   const concurrency = Math.max(1, os.availableParallelism());
   const limit = pLimit(concurrency);
 
@@ -106,4 +120,56 @@ export function calculateCrfByPixelCount(pixelCount: number): number {
 
   const threshold = CRF_THRESHOLDS.find((t) => pixelCount >= t.pixelCount);
   return threshold?.crf ?? 18;
+}
+
+export async function getMetadataToVideoList(videoPaths: string[]) {
+  const concurrency = Math.max(1, os.availableParallelism());
+  const limit = pLimit(concurrency);
+
+  const processSingleVideo = async (videoPath: string) => {
+    try {
+      const metadata = await getVideoMetadata(videoPath);
+
+      if (!metadata) {
+        throw new Error(`Metadata extraction failed for ${videoPath}`);
+      }
+
+      return {
+        input: videoPath,
+        metadata,
+      };
+    } catch (error) {
+      const normalizedError =
+        error instanceof Error
+          ? error
+          : new Error(`Unknown error: ${String(error)}`);
+      normalizedError.message = `[${videoPath}] ${normalizedError.message}`;
+      throw normalizedError;
+    }
+  };
+
+  try {
+    const tasks = videoPaths.map((path) =>
+      limit(() => processSingleVideo(path)),
+    );
+
+    const results = await Promise.allSettled(tasks);
+
+    const successfulResults: VideoInfo[] = [];
+    const errorLogger = console.error.bind(console);
+
+    results.forEach((result) => {
+      if (result.status === "fulfilled") {
+        successfulResults.push(result.value);
+      } else {
+        errorLogger(`Processing failed: ${result.reason.message}`);
+        // TODO: report error
+      }
+    });
+
+    return successfulResults;
+  } catch (error) {
+    console.error("Unexpected pipeline error:", error);
+    return [];
+  }
 }

@@ -1,35 +1,127 @@
 import { glob, type Path } from "glob";
+import os from "node:os";
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { SUPPORT_VIDEO_EXT } from "../../constants";
+import { FFprobeResultConvertResult } from "../../types";
 import {
   getCurrentDateTime,
   getFileNameFromPath,
+  isPathDirectory,
   isVideoFile,
 } from "../../utils";
+import { getVideoMetadata } from "./metadata";
 import {
   calculateCrfByPixelCount,
-  collectSupportedVideoFilesFromDirectory,
+  collectVideoFilesFromPath,
   convertBitrateToMbps,
+  getMetadataToVideoList,
   getVideoOutputPath,
 } from "./utils";
 
 vi.mock("glob");
-vi.mock("../../utils", async () => {
-  const originalModule =
-    await vi.importActual<typeof import("../../utils")>("../../utils");
-  return {
-    ...originalModule,
-    isVideoFile: vi.fn(),
-    getFileNameFromPath: vi.fn(),
-    getCurrentDateTime: vi.fn(),
-  };
-});
+
+vi.mock("../../utils", () => ({
+  isVideoFile: vi.fn(),
+  getFileNameFromPath: vi.fn(),
+  getCurrentDateTime: vi.fn(),
+  isPathDirectory: vi.fn(),
+}));
+
+vi.mock("./metadata", () => ({
+  getVideoMetadata: vi.fn(),
+}));
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.spyOn(os, "availableParallelism").mockReturnValue(4);
 });
 
-describe("collectSupportedVideoFilesFromDirectory", () => {
+describe("getMetadataToVideoList", () => {
+  const mockMetadata: FFprobeResultConvertResult = {
+    width: 720,
+    height: 480,
+    duration: 100.5,
+    avg_frame_rate: 24,
+    bit_rate: 1,
+    codec_name: "hevc",
+    codec_tag_string: "hev1",
+  };
+  const mockVideoPaths = ["video1.mp4", "video2.mov", "video3.avi"];
+
+  test("should return all results when all metadata extraction succeed", async () => {
+    vi.mocked(getVideoMetadata).mockResolvedValue(mockMetadata);
+    const results = await getMetadataToVideoList(mockVideoPaths);
+    expect(results).toHaveLength(3);
+    expect(results[0].input).toBe("video1.mp4");
+    expect(getVideoMetadata).toHaveBeenCalledTimes(3);
+  });
+
+  test("should return successful results with error logging", async () => {
+    vi.mocked(getVideoMetadata)
+      .mockResolvedValueOnce(mockMetadata)
+      .mockRejectedValueOnce(new Error("Corrupted file"))
+      .mockResolvedValueOnce(mockMetadata);
+
+    const consoleSpy = vi.spyOn(console, "error");
+    const results = await getMetadataToVideoList(mockVideoPaths);
+
+    expect(results).toHaveLength(2);
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Corrupted file"),
+    );
+  });
+
+  test("should enhance error messages with video path", async () => {
+    const testError = new Error("Test error");
+    vi.mocked(getVideoMetadata).mockRejectedValue(testError);
+
+    const consoleError = vi.spyOn(console, "error");
+    await expect(getMetadataToVideoList(["error.mp4"])).resolves.toEqual([]);
+    expect(consoleError).toHaveBeenCalledWith(
+      "Processing failed: [error.mp4] Test error",
+    );
+  });
+
+  test("should respect concurrency limit", async () => {
+    let parallelCount = 0;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resolveMap = new Map<string, (...args: any[]) => any>();
+
+    vi.mocked(getVideoMetadata).mockImplementation(async (path) => {
+      parallelCount++;
+      await new Promise((resolve) => resolveMap.set(path, resolve));
+      parallelCount--;
+      return mockMetadata;
+    });
+
+    const promise = getMetadataToVideoList([
+      "video1.mp4",
+      "video2.mov",
+      "video3.avi",
+      "video4.mp4",
+    ]);
+
+    await new Promise(process.nextTick);
+    expect(parallelCount).toBe(4);
+
+    resolveMap.forEach((resolve) => resolve());
+    await promise;
+  });
+
+  test("should return empty array for empty input", async () => {
+    const results = await getMetadataToVideoList([]);
+    expect(results).toEqual([]);
+  });
+});
+
+describe("collectVideoFilesFromPath", () => {
+  test("should handle video path", async () => {
+    vi.mocked(isPathDirectory).mockResolvedValue(false);
+    const dir = "./test.mp4";
+    const files = await collectVideoFilesFromPath(dir);
+    expect(files).toEqual([dir]);
+  });
+
   test("should correctly return a list of video files", async () => {
     const mockFiles = [
       {
@@ -45,12 +137,13 @@ describe("collectSupportedVideoFilesFromDirectory", () => {
         fullpath: () => "test3.mkv",
       },
     ];
+    vi.mocked(isPathDirectory).mockResolvedValue(true);
     vi.mocked(glob).mockResolvedValue(mockFiles as Path[]);
     vi.mocked(isVideoFile).mockImplementation(async (filepath) => {
       return filepath.endsWith(".mp4") || filepath.endsWith(".mkv");
     });
     const dir = "./testDir";
-    const files = await collectSupportedVideoFilesFromDirectory(dir);
+    const files = await collectVideoFilesFromPath(dir);
     expect(files).toEqual(["test1.mp4", "test3.mkv"]);
     const extensions = SUPPORT_VIDEO_EXT.flatMap((ext) => [
       ext,
@@ -74,12 +167,13 @@ describe("collectSupportedVideoFilesFromDirectory", () => {
         fullpath: () => "test1.mp4",
       },
     ];
+    vi.mocked(isPathDirectory).mockResolvedValue(true);
     vi.mocked(glob).mockResolvedValue(mockFiles as Path[]);
     vi.mocked(isVideoFile).mockImplementation(async (filepath) => {
       return filepath.endsWith(".mp4") || filepath.endsWith(".mkv");
     });
     const dir = "./testDir";
-    const result = await collectSupportedVideoFilesFromDirectory(dir);
+    const result = await collectVideoFilesFromPath(dir);
     expect(result).toEqual([]);
   });
 
@@ -90,18 +184,20 @@ describe("collectSupportedVideoFilesFromDirectory", () => {
         fullpath: () => "test1.txt",
       },
     ];
+    vi.mocked(isPathDirectory).mockResolvedValue(true);
     vi.mocked(glob).mockResolvedValue(mockFiles as Path[]);
     vi.mocked(isVideoFile).mockResolvedValue(false);
     const dir = "./testDir";
-    const result = await collectSupportedVideoFilesFromDirectory(dir);
+    const result = await collectVideoFilesFromPath(dir);
     expect(result).toEqual([]);
   });
 
   test("should handle an empty directory", async () => {
     const mockFiles: Path[] = [];
+    vi.mocked(isPathDirectory).mockResolvedValue(true);
     vi.mocked(glob).mockResolvedValue(mockFiles);
     const dir = "./emptyDir";
-    const result = await collectSupportedVideoFilesFromDirectory(dir);
+    const result = await collectVideoFilesFromPath(dir);
     expect(result).toEqual([]);
   });
 });
