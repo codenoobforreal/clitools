@@ -6,6 +6,8 @@ on:
       - dev
     paths-ignore:
       - "**/README.md"
+      - ".changeset/**"
+      - "fixtures/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
