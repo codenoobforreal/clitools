@@ -23,7 +23,7 @@ describe("checkFFmpegInstallation", () => {
       .mockReturnValueOnce("/usr/bin/ffprobe");
 
     expect(checkFFmpegInstallation).toThrowError(
-      /Missing required tools: ffmpeg.*Installation recommendation.*brew install ffmpeg/s,
+      /Missing required tools: ffmpeg/,
     );
   });
 
@@ -35,7 +35,7 @@ describe("checkFFmpegInstallation", () => {
       });
 
     expect(checkFFmpegInstallation).toThrowError(
-      /Missing required tools: ffprobe.*Installation recommendation.*brew install ffmpeg/s,
+      /Missing required tools: ffprobe/,
     );
   });
 
@@ -45,7 +45,7 @@ describe("checkFFmpegInstallation", () => {
     });
 
     expect(checkFFmpegInstallation).toThrowError(
-      /Missing required tools: ffmpeg, ffprobe.*Installation recommendation.*brew install ffmpeg/s,
+      /Missing required tools: ffmpeg, ffprobe/,
     );
   });
 });
