@@ -1,12 +1,12 @@
-import type { FFprobeResultConvertResult } from "../../types.js";
+import type { FFprobeResultConvertdResult } from "../../types.js";
 import {
-  buildFFprobeMetadataArgs,
+  FFprobeCommandBuilder,
   runFFprobeCommand,
 } from "../ffmpeg/commands.js";
 
 export async function getVideoMetadata(
   videoPath: string,
-): Promise<FFprobeResultConvertResult | null> {
+): Promise<FFprobeResultConvertdResult | null> {
   const getVideoMetaDataArgs = buildFFprobeMetadataArgs(videoPath);
   const res = await runFFprobeCommand(getVideoMetaDataArgs);
   if (res === undefined) {
@@ -24,29 +24,31 @@ export async function getVideoMetadata(
 // TODO: bit depth: bits_per_raw_sample=N/A
 export function convertFFprobeResult(
   result: string,
-): FFprobeResultConvertResult {
-  const resultObject: Partial<FFprobeResultConvertResult> = {};
+): FFprobeResultConvertdResult {
+  const resultObject: Partial<FFprobeResultConvertdResult> = {};
 
-  const parseKeyValue = (line: string): [key: string, value: string] => {
+  const requiredFields = new Set<keyof FFprobeResultConvertdResult>([
+    "codec_name",
+    "codec_tag_string",
+    "width",
+    "height",
+    "duration",
+    "bit_rate",
+    "avg_frame_rate",
+  ]);
+
+  const parseKeyValue = (line: string): [string, string] => {
     const eqIndex = line.indexOf("=");
-    if (eqIndex === -1) {
-      throw new Error(`Missing equals sign in key-value pair: ${line}`);
+    if (eqIndex === -1 || eqIndex === 0) {
+      throw new Error(`Invalid key-value format: ${line}`);
     }
-    if (eqIndex === 0) {
-      throw new Error(`Empty key in key-value pair: ${line}`);
-    }
-    const key = line.slice(0, eqIndex);
-    const value = eqIndex === line.length - 1 ? "" : line.slice(eqIndex + 1);
-    return [key, value];
+    return [line.slice(0, eqIndex), line.slice(eqIndex + 1)];
   };
 
   const validateNumber = (value: string, key: string): number => {
-    if (value === "") {
-      throw new Error(`Empty value for numeric field ${key}`);
-    }
     const num = Number(value);
-    if (Number.isNaN(num)) {
-      throw new Error(`Invalid numeric value for ${key}: ${value}`);
+    if (!value.trim() || Number.isNaN(num)) {
+      throw new Error(`Invalid ${key} value: ${value}`);
     }
     return num;
   };
@@ -61,22 +63,31 @@ export function convertFFprobeResult(
       case "codec_name":
       case "codec_tag_string":
         resultObject[key] = value;
+        requiredFields.delete(key);
         break;
+
       case "width":
       case "height":
       case "duration":
       case "bit_rate":
         resultObject[key] = validateNumber(value, key);
+        requiredFields.delete(key);
         break;
+
       case "avg_frame_rate":
         resultObject.avg_frame_rate = calcFFprobeFps(value);
-        break;
-      default:
+        requiredFields.delete("avg_frame_rate");
         break;
     }
   }
 
-  return resultObject as FFprobeResultConvertResult;
+  if (requiredFields.size > 0) {
+    throw new Error(
+      `Missing required fields: ${[...requiredFields].join(", ")}`,
+    );
+  }
+
+  return resultObject as FFprobeResultConvertdResult;
 }
 
 // special case: 33152000/1105061
@@ -92,4 +103,14 @@ export function calcFFprobeFps(fps: string): number {
     .replace(/\.$/, "");
 
   return parseFloat(formatted);
+}
+
+export function buildFFprobeMetadataArgs(inputPath: string) {
+  return new FFprobeCommandBuilder()
+    .setLogLevel()
+    .selectStream()
+    .showEntries()
+    .setOutputFormat("default=noprint_wrappers=1:nokey=0")
+    .setInput(inputPath)
+    .build();
 }

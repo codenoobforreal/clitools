@@ -2,7 +2,7 @@ import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
-import { getFileNameFromPath } from "../../utils.js";
+import { getFileNameFromPath } from "../../utils/file.js";
 import { getAllSupportImagesFromPath } from "./utils.js";
 
 export async function compressImages(input: string, output: string) {

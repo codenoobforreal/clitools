@@ -1,11 +1,11 @@
 import { cancel, confirm, group, isCancel, select, text } from "@clack/prompts";
 import type {
-  ProcessHEVCEnableQuickTimeTaskProps,
-  ProcessVideoEncodeTaskProps,
+  EnableHEVCQuickTimeTaskProps,
+  EncodeVideoTaskProps,
   TaskType,
 } from "../../types.js";
 
-export async function askForVideoEncodeAnswer(): Promise<ProcessVideoEncodeTaskProps> {
+export async function askForVideoEncodeAnswer(): Promise<EncodeVideoTaskProps> {
   return await group(
     {
       input: () =>
@@ -24,7 +24,7 @@ export async function askForVideoEncodeAnswer(): Promise<ProcessVideoEncodeTaskP
   );
 }
 
-export async function askForHEVCEnableQuickTimeAnswer(): Promise<ProcessHEVCEnableQuickTimeTaskProps> {
+export async function askForHEVCEnableQuickTimeAnswer(): Promise<EnableHEVCQuickTimeTaskProps> {
   return await group(
     {
       input: () =>

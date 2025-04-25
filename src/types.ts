@@ -1,4 +1,4 @@
-import { SUPPORT_VIDEO_EXT, TASK_TYPE } from "./constants.js";
+import { TASK_TYPE } from "./constants.js";
 
 export interface ErrnoException extends Error {
   errno?: number | undefined;
@@ -31,13 +31,12 @@ function isArbitraryObject(
 
 export type ArbitraryObject = { [key: string]: unknown };
 
-export interface ProcessVideoEncodeTaskProps {
+export interface EncodeVideoTaskProps {
   input: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface ProcessHEVCEnableQuickTimeTaskProps
-  extends ProcessVideoEncodeTaskProps {}
+export interface EnableHEVCQuickTimeTaskProps extends EncodeVideoTaskProps {}
 
 export interface ProgressInfo {
   frames?: number;
@@ -57,10 +56,10 @@ export interface ProgressInfo {
 
 export interface VideoInfo {
   input: string;
-  metadata: FFprobeResultConvertResult;
+  metadata: FFprobeResultConvertdResult;
 }
 
-export interface FFprobeResultConvertResult {
+export interface FFprobeResultConvertdResult {
   codec_name: string;
   codec_tag_string: string;
   width: number;
@@ -68,30 +67,6 @@ export interface FFprobeResultConvertResult {
   avg_frame_rate: number;
   duration: number;
   bit_rate: number;
-}
-
-export type VideoFormat = (typeof SUPPORT_VIDEO_EXT)[number];
-
-type VideoEncodeConfig = {
-  format: VideoFormat;
-  crf: number;
-  width: number;
-  height: number;
-  avg_frame_rate: number;
-};
-
-export type VideoEncodePreset = Partial<VideoEncodeConfig> &
-  Pick<VideoEncodeConfig, "format" | "width" | "height">;
-
-export interface EncodeVideoEvaluateConfig
-  extends Partial<Omit<VideoEncodeConfig, "crf" | "avg_frame_rate">> {
-  crf: number;
-  avg_frame_rate: number;
-}
-
-export interface EncodeVideoCommandConfig extends EncodeVideoEvaluateConfig {
-  input: string;
-  output: string;
 }
 
 export type TaskType = (typeof TASK_TYPE)[number];
