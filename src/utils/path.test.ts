@@ -4,7 +4,7 @@ import {
   getFileExt,
   getFileNameFromPath,
   resolveAndNormalizePath,
-} from "./file";
+} from "./path";
 
 describe("getFileNameFromPath", () => {
   test("should extract the correct filename from a standard path", () => {

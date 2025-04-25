@@ -1,7 +1,3 @@
-import { log } from "@clack/prompts";
-import type { ProgressInfo } from "../../types.js";
-import { spawnFFmpegProcess, spawnFFprobeProcess } from "./process.js";
-
 export class FFmpegCommandBuilder {
   private globalOptions: string[] = ["-hide_banner", "-loglevel", "error"];
   private inputs: string[] = [];
@@ -109,38 +105,5 @@ export class FFprobeCommandBuilder {
 
   build(): string[] {
     return [...this.globalOptions, ...this.outputFormat, this.inputPath];
-  }
-}
-
-export async function runFFprobeCommand(args: string[]) {
-  const ac = new AbortController();
-  try {
-    return await spawnFFprobeProcess(args, ac.signal);
-  } catch (error) {
-    if (error instanceof Error) {
-      log.error(error.message);
-    } else {
-      console.error(error);
-    }
-  } finally {
-    ac.abort();
-  }
-}
-
-export async function runFFmpegCommand(
-  args: string[],
-  onProgress?: (progress: ProgressInfo) => void,
-) {
-  const ac = new AbortController();
-  try {
-    return await spawnFFmpegProcess(args, ac.signal, onProgress);
-  } catch (error) {
-    if (error instanceof Error) {
-      log.error(error.message);
-    } else {
-      console.error(error);
-    }
-  } finally {
-    ac.abort();
   }
 }

@@ -1,4 +1,4 @@
-import { FFmpegCommandBuilder } from "../../core/ffmpeg/commands.js";
+import { FFmpegCommandBuilder } from "../../core/ffmpeg/command-builder.js";
 import { getVideoOutputPath } from "../../core/video/path-utils.js";
 import type { VideoInfo } from "../../types.js";
 

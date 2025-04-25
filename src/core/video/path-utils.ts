@@ -1,6 +1,6 @@
 import path from "node:path";
 import { getCurrentDateTime } from "../../utils/date.js";
-import { getFileNameFromPath } from "../../utils/file.js";
+import { getFileNameFromPath } from "../../utils/path.js";
 
 // other path related logic
 // file-collection.ts is for collecting files from path

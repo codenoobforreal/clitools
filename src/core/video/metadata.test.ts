@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { runFFprobeCommand } from "../ffmpeg/commands";
+import { runFFprobeCommand } from "../../libs/ffmpeg-excutor";
 import {
   buildFFprobeMetadataArgs,
   calcFFprobeFps,
@@ -7,7 +7,7 @@ import {
   getVideoMetadata,
 } from "./metadata";
 
-vi.mock(import("../ffmpeg/commands"), async (importOriginal) => {
+vi.mock(import("../../libs/ffmpeg-excutor"), async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,

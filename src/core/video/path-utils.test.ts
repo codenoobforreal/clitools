@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 import { getCurrentDateTime } from "../../utils/date";
-import { getFileNameFromPath } from "../../utils/file";
+import { getFileNameFromPath } from "../../utils/path";
 import { getVideoOutputPath } from "./path-utils";
 
 vi.mock("../../utils/date", () => ({
   getCurrentDateTime: vi.fn(),
 }));
 
-vi.mock("../../utils/file", () => ({
+vi.mock("../../utils/path", () => ({
   getFileNameFromPath: vi.fn(),
 }));
 

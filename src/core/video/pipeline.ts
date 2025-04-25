@@ -1,9 +1,9 @@
 import os from "node:os";
 import pLimit from "p-limit";
 import type { VideoInfo } from "../../types.js";
-import { resolveAndNormalizePath } from "../../utils/file.js";
+import { resolveAndNormalizePath } from "../../utils/path.js";
 import { sanitizePathLikeInput } from "../../utils/sanitize.js";
-import { collectVideoFilesFromPath } from "./file-collection.js";
+import { getVideoPathsFromPath } from "./collector.js";
 import { getVideoMetadata } from "./metadata.js";
 
 export async function getMetadataToVideoList(videoPaths: string[]) {
@@ -62,12 +62,9 @@ export async function getVideoInfoListFromUserInput(
   input: string,
 ): Promise<VideoInfo[]> {
   const sanitizedPath = sanitizePathLikeInput(input);
-  const normalizedPath = await resolveAndNormalizePath(
-    sanitizedPath,
-    process.cwd(),
-  );
+  const normalizedPath = resolveAndNormalizePath(sanitizedPath, process.cwd());
   const collectedVideoPaths: string[] =
-    await collectVideoFilesFromPath(normalizedPath);
+    await getVideoPathsFromPath(normalizedPath);
   // TODO: scan error class
   if (collectedVideoPaths.length === 0) {
     throw new Error("no video to process");

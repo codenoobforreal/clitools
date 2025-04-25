@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import which from "which";
-import { checkFFmpegInstallation } from "./check-install";
+import { checkFFmpegInstallation } from "./checker";
 
 describe("checkFFmpegInstallation", () => {
   afterEach(() => {
