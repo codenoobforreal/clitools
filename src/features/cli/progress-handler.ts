@@ -1,5 +1,5 @@
 import type { ProgressInfo } from "../../types.js";
-import { formatSeconds } from "../../utils.js";
+import { formatSeconds } from "../../utils/date.js";
 
 export function createProgressHandler(totalDuration: number) {
   let lastUpdate = 0;

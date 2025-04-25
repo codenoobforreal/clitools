@@ -1,12 +1,12 @@
-import type { FFprobeResultConvertResult } from "../../types.js";
+import type { FFprobeResultConvertdResult } from "../../types.js";
 import {
-  buildFFprobeMetadataArgs,
+  FFprobeCommandBuilder,
   runFFprobeCommand,
 } from "../ffmpeg/commands.js";
 
 export async function getVideoMetadata(
   videoPath: string,
-): Promise<FFprobeResultConvertResult | null> {
+): Promise<FFprobeResultConvertdResult | null> {
   const getVideoMetaDataArgs = buildFFprobeMetadataArgs(videoPath);
   const res = await runFFprobeCommand(getVideoMetaDataArgs);
   if (res === undefined) {
@@ -24,8 +24,8 @@ export async function getVideoMetadata(
 // TODO: bit depth: bits_per_raw_sample=N/A
 export function convertFFprobeResult(
   result: string,
-): FFprobeResultConvertResult {
-  const resultObject: Partial<FFprobeResultConvertResult> = {};
+): FFprobeResultConvertdResult {
+  const resultObject: Partial<FFprobeResultConvertdResult> = {};
 
   const parseKeyValue = (line: string): [key: string, value: string] => {
     const eqIndex = line.indexOf("=");
@@ -76,7 +76,7 @@ export function convertFFprobeResult(
     }
   }
 
-  return resultObject as FFprobeResultConvertResult;
+  return resultObject as FFprobeResultConvertdResult;
 }
 
 // special case: 33152000/1105061
@@ -92,4 +92,14 @@ export function calcFFprobeFps(fps: string): number {
     .replace(/\.$/, "");
 
   return parseFloat(formatted);
+}
+
+export function buildFFprobeMetadataArgs(inputPath: string) {
+  return new FFprobeCommandBuilder()
+    .setLogLevel()
+    .selectStream()
+    .showEntries()
+    .setOutputFormat("default=noprint_wrappers=1:nokey=0")
+    .setInput(inputPath)
+    .build();
 }

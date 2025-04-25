@@ -1,19 +1,20 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import type { FFprobeResultConvertResult } from "../../types";
+import type { FFprobeResultConvertdResult } from "../../types";
+import { runFFprobeCommand } from "../ffmpeg/commands";
 import {
   buildFFprobeMetadataArgs,
-  runFFprobeCommand,
-} from "../ffmpeg/commands";
-import {
   calcFFprobeFps,
   convertFFprobeResult,
   getVideoMetadata,
 } from "./metadata";
 
-vi.mock("../ffmpeg/commands", () => ({
-  buildFFprobeMetadataArgs: vi.fn(),
-  runFFprobeCommand: vi.fn(),
-}));
+vi.mock(import("../ffmpeg/commands"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    runFFprobeCommand: vi.fn(),
+  };
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -22,7 +23,7 @@ beforeEach(() => {
 describe("convertFFprobeResult", () => {
   test("should correctly parse all expected fields", () => {
     const input = `codec_name=hevc\ncodec_tag_string=hev1\nwidth=720\nheight=480\nduration=100.5\nnb_frames=2400\navg_frame_rate=24/1\nbit_rate=1`;
-    const expected: FFprobeResultConvertResult = {
+    const expected: FFprobeResultConvertdResult = {
       width: 720,
       height: 480,
       duration: 100.5,
@@ -55,22 +56,19 @@ describe("convertFFprobeResult", () => {
 describe("getVideoMetadata", () => {
   test("should return converted result on valid output", async () => {
     const mockOutput = [
+      "codec_name=hevc",
+      "codec_tag_string=hev1",
       "width=1920",
       "height=1080",
       "avg_frame_rate=24/1",
       "duration=10.0",
       "bit_rate=5",
-      "codec_name=hevc",
-      "codec_tag_string=hev1",
     ].join("\n");
-
     vi.mocked(runFFprobeCommand).mockResolvedValue({
       out: mockOutput,
       err: "",
     });
-
     const result = await getVideoMetadata("valid.mp4");
-
     expect(result).toEqual({
       codec_name: "hevc",
       codec_tag_string: "hev1",
@@ -86,7 +84,6 @@ describe("getVideoMetadata", () => {
     const videoPath = "./nonexistent.mp4";
     vi.mocked(runFFprobeCommand).mockResolvedValue(undefined);
     await expect(getVideoMetadata(videoPath)).resolves.toBeNull();
-    expect(buildFFprobeMetadataArgs).toHaveBeenCalled();
   });
 
   test("should throw error when ffprobe output is empty", async () => {
@@ -98,7 +95,6 @@ describe("getVideoMetadata", () => {
     await expect(
       getVideoMetadata(videoPath),
     ).rejects.toThrowErrorMatchingInlineSnapshot(`[Error: ffprobe error]`);
-    expect(buildFFprobeMetadataArgs).toHaveBeenCalled();
   });
 });
 
@@ -121,5 +117,18 @@ describe("calcFFprobeFps", () => {
   test("should handle edge cases", () => {
     expect(calcFFprobeFps("2997/100")).toBe(29.97);
     expect(calcFFprobeFps("14142/1000")).toBe(14.14);
+  });
+});
+
+describe("buildFFprobeMetadataArgs", () => {
+  test("should return the same command arguments", () => {
+    let input = "input";
+    expect(buildFFprobeMetadataArgs(input).join(" ")).toMatchInlineSnapshot(
+      `"-v error -select_streams v:0 -show_entries stream:format -of default=noprint_wrappers=1:nokey=0 input"`,
+    );
+    input = "another";
+    expect(buildFFprobeMetadataArgs(input).join(" ")).toMatchInlineSnapshot(
+      `"-v error -select_streams v:0 -show_entries stream:format -of default=noprint_wrappers=1:nokey=0 another"`,
+    );
   });
 });

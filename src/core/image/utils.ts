@@ -1,6 +1,6 @@
 import { glob } from "glob";
 import { SUPPORT_IMAGE_EXT } from "../../constants.js";
-import { isImageFile } from "../../utils.js";
+import { isImageFile } from "../../utils/file-type.js";
 
 export async function getAllSupportImagesFromPath(dir: string) {
   const exts = SUPPORT_IMAGE_EXT.join(",");

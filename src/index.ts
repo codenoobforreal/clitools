@@ -1,30 +1,13 @@
 #!/usr/bin/env node
 
-import { getTaskDetail } from "./features/cli/cli.js";
-import { askForContinue } from "./features/cli/prompt.js";
-import {
-  processHEVCEnableQuickTimeTask,
-  processVideoEncodeTask,
-} from "./features/cli/tasks.js";
+import { runCli } from "./features/cli/index.js";
 import { isErrnoException } from "./types.js";
 
 main();
 
 async function main() {
   try {
-    const { task, answer } = await getTaskDetail();
-    const shouldContinue = await askForContinue();
-    if (!shouldContinue) {
-      return;
-    }
-    switch (task) {
-      case "video-encode":
-        await processVideoEncodeTask(answer);
-        break;
-      case "hevc-enable-QuickTime":
-        await processHEVCEnableQuickTimeTask(answer);
-        break;
-    }
+    await runCli();
   } catch (error) {
     // ENOENT	No such file or directory
     // EACCES	Permission denied
