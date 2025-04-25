@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import type { FFprobeResultConvertdResult } from "../../types";
 import { runFFprobeCommand } from "../ffmpeg/commands";
 import {
   buildFFprobeMetadataArgs,
@@ -21,37 +20,117 @@ beforeEach(() => {
 });
 
 describe("convertFFprobeResult", () => {
-  test("should correctly parse all expected fields", () => {
-    const input = `codec_name=hevc\ncodec_tag_string=hev1\nwidth=720\nheight=480\nduration=100.5\nnb_frames=2400\navg_frame_rate=24/1\nbit_rate=1`;
-    const expected: FFprobeResultConvertdResult = {
-      width: 720,
-      height: 480,
-      duration: 100.5,
-      avg_frame_rate: 24,
-      bit_rate: 1,
-      codec_name: "hevc",
-      codec_tag_string: "hev1",
-    };
+  const validInput = `
+    codec_name=h264
+    codec_tag_string=avc1
+    width=1920
+    height=1080
+    duration=60.5
+    bit_rate=5000000
+    avg_frame_rate=30/1
+  `;
+
+  test("Verifies all fields are parsed correctly", () => {
+    const result = convertFFprobeResult(validInput);
+
+    expect(result).toEqual({
+      codec_name: "h264",
+      codec_tag_string: "avc1",
+      width: 1920,
+      height: 1080,
+      duration: 60.5,
+      bit_rate: 5000000,
+      avg_frame_rate: 30,
+    });
+  });
+
+  test("Handles inputs containing empty lines", () => {
+    const input = `
+      codec_name=hevc
+
+      codec_tag_string=hvc1
+      width=3840
+      height=2160
+      duration=120
+      bit_rate=20000000
+      avg_frame_rate=60000/1001
+    `;
+
     const result = convertFFprobeResult(input);
-    expect(result).toEqual(expected);
+    expect(result.height).toBe(2160);
   });
-  test("should throw error for Empty key", () => {
-    const input = "=210";
-    expect(() =>
-      convertFFprobeResult(input),
-    ).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Empty key in key-value pair: =210]`,
+
+  test("Missing required fields validation", () => {
+    const input = `
+      codec_name=aac
+      width=1280
+      height=720
+      duration=30
+      bit_rate=256000
+    `;
+
+    expect(() => convertFFprobeResult(input)).toThrow(
+      /Missing required fields/,
     );
   });
-  test("should throw error for invalid lines", () => {
-    const input = "invalid_line";
-    expect(() =>
-      convertFFprobeResult(input),
-    ).toThrowErrorMatchingInlineSnapshot(
-      `[Error: Missing equals sign in key-value pair: invalid_line]`,
+
+  test("Invalid numeric format handling", () => {
+    const input = validInput.replace("width=1920", "width=abc");
+
+    expect(() => convertFFprobeResult(input)).toThrow(
+      "Invalid width value: abc",
     );
+  });
+
+  test("Malformed key-value pair detection", () => {
+    const testCases = [
+      { input: "invalidLine", error: "Invalid key-value format" },
+      { input: "=value", error: "Invalid key-value format" },
+    ];
+
+    testCases.forEach(({ input, error }) => {
+      expect(() => convertFFprobeResult(input)).toThrow(error);
+    });
+  });
+
+  test("Ignores unrecognized fields", () => {
+    const input = validInput + "\nunknown_field=value";
+    expect(() => convertFFprobeResult(input)).not.toThrow();
   });
 });
+
+// describe("convertFFprobeResult", () => {
+//   test("should correctly parse all expected fields", () => {
+//     const input = `codec_name=hevc\ncodec_tag_string=hev1\nwidth=720\nheight=480\nduration=100.5\nnb_frames=2400\navg_frame_rate=24/1\nbit_rate=1`;
+//     const expected: FFprobeResultConvertdResult = {
+//       width: 720,
+//       height: 480,
+//       duration: 100.5,
+//       avg_frame_rate: 24,
+//       bit_rate: 1,
+//       codec_name: "hevc",
+//       codec_tag_string: "hev1",
+//     };
+//     const result = convertFFprobeResult(input);
+//     expect(result).toEqual(expected);
+//   });
+//   test("should throw error for Empty key", () => {
+//     const input = "=210";
+//     expect(() =>
+//       convertFFprobeResult(input),
+//     ).toThrowErrorMatchingInlineSnapshot(
+//       `[Error: Empty key in key-value pair: =210]`,
+//     );
+//   });
+//   test("should throw error for invalid lines", () => {
+//     const input = "invalid_line";
+//     expect(() =>
+//       convertFFprobeResult(input),
+//     ).toThrowErrorMatchingInlineSnapshot(
+//       `[Error: Missing equals sign in key-value pair: invalid_line]`,
+//     );
+//   });
+// });
 
 describe("getVideoMetadata", () => {
   test("should return converted result on valid output", async () => {
