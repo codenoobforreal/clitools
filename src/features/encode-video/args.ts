@@ -1,7 +1,7 @@
 import { FFmpegCommandBuilder } from "../../core/ffmpeg/command-builder.js";
 import { calculateCrfByPixelCount } from "../../core/video/crf-calculation.js";
-import { getVideoOutputPath } from "../../core/video/path-utils.js";
 import type { VideoInfo } from "../../types.js";
+import { generateOutputPath } from "../../utils/output-generator.js";
 
 export function buildFFmpegEncodeVideoArgs({
   metadata,
@@ -11,7 +11,7 @@ export function buildFFmpegEncodeVideoArgs({
   const crf = calculateCrfByPixelCount(width * height);
   // TODO: format depends on encode requirement
   const format = "mp4";
-  const output = getVideoOutputPath(input, format);
+  const output = generateOutputPath(input, format);
 
   return new FFmpegCommandBuilder()
     .addProgressReporting()

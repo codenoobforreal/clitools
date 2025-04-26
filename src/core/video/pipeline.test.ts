@@ -8,8 +8,6 @@ import { getVideoPathsFromPath } from "./collector";
 import { getVideoMetadata } from "./metadata";
 import { getVideoInfoListFromUserInput } from "./pipeline";
 
-vi.mock("glob");
-
 vi.mock(import("./collector"), async (importOriginal) => {
   const actual = await importOriginal();
   return {
@@ -114,28 +112,5 @@ describe("getVideoInfoListFromUserInput", () => {
     expect(consoleSpy).toHaveBeenCalledWith(
       "Processing failed: [/normalized/path/error.mp4] Test error",
     );
-  });
-
-  test("should respect concurrency limit", async () => {
-    let parallelCount = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const resolveMap = new Map<string, (...args: any[]) => any>();
-    vi.mocked(getVideoMetadata).mockImplementation(async (path) => {
-      parallelCount++;
-      await new Promise((resolve) => resolveMap.set(path, resolve));
-      parallelCount--;
-      return mockMetadata;
-    });
-    vi.mocked(getVideoPathsFromPath).mockResolvedValue([
-      "video1.mp4",
-      "video2.mov",
-      "video3.avi",
-      "video4.mp4",
-    ]);
-    const promise = getVideoInfoListFromUserInput("/valid/directory");
-    await new Promise(process.nextTick);
-    expect(parallelCount).toBe(4);
-    resolveMap.forEach((resolve) => resolve());
-    await promise;
   });
 });

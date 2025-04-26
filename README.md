@@ -12,6 +12,8 @@ pnpm dlx @codenoobforreal/clitools
 npx @codenoobforreal/clitools
 ```
 
+## Features
+
 ### Video Encoding & Compression
 
 - ​**Efficient H.265/HEVC Conversion**: Batch encode videos to H.265 format using [HandBrake's recommended quality settings](https://handbrake.fr/docs/en/1.9.0/workflow/adjust-quality.html) via FFmpeg.
@@ -24,8 +26,14 @@ This feature requires [FFmpeg](https://ffmpeg.org) to be installed.[Installation
 
 - ​**Zero-Quality-Loss Conversion**: Batch remux H.265 videos to QuickTime-friendly form without re-encoding.
 
-❗ ​**Dependency**:  
-This feature requires [FFmpeg](https://ffmpeg.org) to be installed.[Installation Guide](#ffmpeg-installation-guide)
+- **Dependency**:  
+  This feature requires [FFmpeg](https://ffmpeg.org) to be installed.[Installation Guide](#ffmpeg-installation-guide)
+
+### Batch Lossless Image Compression
+
+- ​**Batch Lossless Image Compression**: Process images in bulk while preserving original formats
+
+- ​**Important note**: Output files may be larger than originals when compressing already small source files
 
 ## Output Structure
 

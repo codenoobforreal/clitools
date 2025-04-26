@@ -5,7 +5,7 @@ export async function collectFilesFromDirectory(
   directoryPath: string,
   options: {
     pattern: string;
-    validator: (path: string) => Promise<string | null>;
+    validator: (path: string) => Promise<string>;
   },
 ) {
   const { pattern, validator } = options;

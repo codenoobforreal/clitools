@@ -1,6 +1,7 @@
+import { askForContinue } from "../../libs/prompt.js";
 import { enableHEVCQuickTimeTask } from "../enable-quickTime/index.js";
+import { imageEncodeTask } from "../encode-image/index.js";
 import { videoEncodeTask } from "../encode-video/index.js";
-import { askForContinue } from "./prompt.js";
 import { getTaskDetail } from "./task-detail.js";
 
 export async function runCli() {
@@ -15,6 +16,9 @@ export async function runCli() {
       break;
     case "hevc-enable-QuickTime":
       await enableHEVCQuickTimeTask(answer);
+      break;
+    case "image-encode":
+      await imageEncodeTask(answer);
       break;
   }
 }

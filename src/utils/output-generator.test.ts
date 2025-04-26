@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
-import { getCurrentDateTime } from "../../utils/date";
-import { getFileNameFromPath } from "../../utils/path";
-import { getVideoOutputPath } from "./path-utils";
+import { getCurrentDateTime } from "./date";
+import { generateOutputPath } from "./output-generator";
+import { getFileNameFromPath } from "./path";
 
-vi.mock("../../utils/date", () => ({
+vi.mock("./date", () => ({
   getCurrentDateTime: vi.fn(),
 }));
 
-vi.mock("../../utils/path", () => ({
+vi.mock("./path", () => ({
   getFileNameFromPath: vi.fn(),
 }));
 
@@ -23,7 +23,7 @@ describe("getVideoOutputPath", () => {
     const format = "mp4";
     const expected = "/videos/source-20231104123456.mp4";
 
-    expect(getVideoOutputPath(source, format)).toBe(expected);
+    expect(generateOutputPath(source, format)).toBe(expected);
   });
 
   test("should support various format extensions", () => {
@@ -35,7 +35,7 @@ describe("getVideoOutputPath", () => {
     ];
     vi.mocked(getFileNameFromPath).mockReturnValue("test");
     testCases.forEach(({ format, expected }) => {
-      expect(getVideoOutputPath(source, format)).toBe(expected);
+      expect(generateOutputPath(source, format)).toBe(expected);
     });
   });
 
@@ -44,6 +44,6 @@ describe("getVideoOutputPath", () => {
     const expected = "/data/video@123/my video file-20231104123456.mp4";
     vi.mocked(getFileNameFromPath).mockReturnValue("my video file");
 
-    expect(getVideoOutputPath(source, "mp4")).toBe(expected);
+    expect(generateOutputPath(source, "mp4")).toBe(expected);
   });
 });

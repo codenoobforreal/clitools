@@ -1,9 +1,10 @@
 import { cancel, confirm, group, isCancel, select, text } from "@clack/prompts";
 import type {
   EnableHEVCQuickTimeTaskProps,
+  EncodeImageTaskProps,
   EncodeVideoTaskProps,
   TaskType,
-} from "../../types.js";
+} from "../types.js";
 
 export async function askForVideoEncodeAnswer(): Promise<EncodeVideoTaskProps> {
   return await group(
@@ -12,6 +13,25 @@ export async function askForVideoEncodeAnswer(): Promise<EncodeVideoTaskProps> {
         text({
           message: "Enter input path",
           placeholder: "Video path or a folder of videos",
+          defaultValue: ".",
+        }),
+    },
+    {
+      onCancel: () => {
+        cancel("Operation cancelled.");
+        process.exit(0);
+      },
+    },
+  );
+}
+
+export async function askForImageEncodeAnswer(): Promise<EncodeImageTaskProps> {
+  return await group(
+    {
+      input: () =>
+        text({
+          message: "Enter input path",
+          placeholder: "Image path or a folder of images",
           defaultValue: ".",
         }),
     },
@@ -49,17 +69,18 @@ export async function askForTask(): Promise<TaskType> {
     options: [
       {
         value: "video-encode",
-        label: "H.265 video encoding with recommended quality settings",
+        label:
+          "H.265 video encoding with recommended quality settings (batch available)",
       },
       {
         value: "hevc-enable-QuickTime",
         label:
-          "Make QuickTime-incompatible HEVC videos playable without re-encoding",
+          "Make QuickTime-incompatible HEVC videos playable without re-encoding (batch available)",
       },
-      // {
-      //   value: "image-encode",
-      //   label: "Image Encode",
-      // },
+      {
+        value: "image-encode",
+        label: "Lossless image encoding (batch available)",
+      },
     ],
   });
   if (isCancel(task)) {

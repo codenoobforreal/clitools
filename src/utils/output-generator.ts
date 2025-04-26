@@ -1,6 +1,6 @@
 import path from "node:path";
-import { getCurrentDateTime } from "../../utils/date.js";
-import { getFileNameFromPath } from "../../utils/path.js";
+import { getCurrentDateTime } from "./date.js";
+import { getFileNameFromPath } from "./path.js";
 
 // other path related logic
 // file-collection.ts is for collecting files from path
@@ -11,7 +11,7 @@ import { getFileNameFromPath } from "../../utils/path.js";
  * @param format video output format
  * @returns output name in the same dir
  */
-export function getVideoOutputPath(source: string, format: string) {
+export function generateOutputPath(source: string, format: string) {
   return path.join(
     path.dirname(source),
     `${getFileNameFromPath(source)}-${getCurrentDateTime()}.${format}`,
