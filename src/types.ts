@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 import { TASK_TYPE } from "./constants.js";
 
 export interface ErrnoException extends Error {
@@ -35,8 +36,8 @@ export interface EncodeVideoTaskProps {
   input: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EnableHEVCQuickTimeTaskProps extends EncodeVideoTaskProps {}
+export interface EncodeImageTaskProps extends EncodeVideoTaskProps {}
 
 export interface ProgressInfo {
   frames?: number;
@@ -57,6 +58,10 @@ export interface ProgressInfo {
 export interface VideoInfo {
   input: string;
   metadata: FFprobeResultConvertdResult;
+}
+
+export interface ImageInfo {
+  input: string;
 }
 
 export interface FFprobeResultConvertdResult {

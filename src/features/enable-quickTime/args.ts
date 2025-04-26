@@ -1,6 +1,6 @@
-import { FFmpegCommandBuilder } from "../../core/ffmpeg/commands.js";
-import { getVideoOutputPath } from "../../core/video/path-utils.js";
+import { FFmpegCommandBuilder } from "../../core/ffmpeg/command-builder.js";
 import type { VideoInfo } from "../../types.js";
+import { generateOutputPath } from "../../utils/output-generator.js";
 
 export function buildHEVCEnableQuickTimeArgs({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -8,7 +8,7 @@ export function buildHEVCEnableQuickTimeArgs({
   input,
 }: VideoInfo): string[] {
   const format = "mp4";
-  const output = getVideoOutputPath(input, format);
+  const output = generateOutputPath(input, format);
 
   return new FFmpegCommandBuilder()
     .addInput(input)

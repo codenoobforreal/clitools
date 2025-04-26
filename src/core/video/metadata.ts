@@ -1,8 +1,6 @@
+import { runFFprobeCommand } from "../../libs/ffmpeg-executor.js";
 import type { FFprobeResultConvertdResult } from "../../types.js";
-import {
-  FFprobeCommandBuilder,
-  runFFprobeCommand,
-} from "../ffmpeg/commands.js";
+import { FFprobeCommandBuilder } from "../ffmpeg/command-builder.js";
 
 export async function getVideoMetadata(
   videoPath: string,

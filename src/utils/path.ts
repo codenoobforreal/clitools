@@ -20,10 +20,10 @@ export function getFileExt(filepath: string): string {
   return path.extname(filepath).slice(1);
 }
 
-export async function resolveAndNormalizePath(
+export function resolveAndNormalizePath(
   inputPath: string,
   baseDir: string,
-): Promise<string> {
+): string {
   const resolvedPath = path.isAbsolute(inputPath)
     ? path.normalize(inputPath)
     : path.resolve(baseDir, inputPath);

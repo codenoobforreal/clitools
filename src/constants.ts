@@ -10,7 +10,7 @@ export const SUPPORT_VIDEO_EXT = [
   "wmv",
 ] as const;
 
-export const SUPPORT_IMAGE_EXT = ["jpg", "jpeg", "png"] as const;
+export const SUPPORT_IMAGE_EXT = ["jpg", "jpeg", "png", "webp", "gif"] as const;
 
 export const TASK_TYPE = [
   "video-encode",

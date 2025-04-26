@@ -1,39 +1,64 @@
 import fs from "node:fs";
-import fsp from "node:fs/promises";
-import path from "node:path";
+import { pipeline } from "node:stream";
+import util from "node:util";
 import sharp from "sharp";
-import { getFileNameFromPath } from "../../utils/file.js";
-import { getAllSupportImagesFromPath } from "./utils.js";
+import { generateOutputPath } from "../../utils/output-generator.js";
+import { getFileExt } from "../../utils/path.js";
 
-export async function compressImages(input: string, output: string) {
-  const images = await getAllSupportImagesFromPath(input);
-  for (const image of images) {
-    const outputImageDir = path.join(
-      output,
-      path.dirname(path.relative(input, image)),
-    );
-    await compressImage(image, outputImageDir);
-  }
-}
+const promisifyPipeline = util.promisify(pipeline);
 
-async function compressImage(input: string, outputDir: string) {
-  const ext = path.extname(input);
-  const originalFilename = getFileNameFromPath(input);
+export async function encodeImage(input: string) {
+  try {
+    return await new Promise<string>((resolve, reject) => {
+      const ext = getFileExt(input).toLowerCase();
+      const outputPath = generateOutputPath(input, ext);
 
-  await fsp.mkdir(outputDir, { recursive: true });
-  const outputPath = path.join(outputDir, `${originalFilename}${ext}`);
+      const readStream = fs.createReadStream(input);
+      const writeStream = fs.createWriteStream(outputPath);
 
-  const rs = fs.createReadStream(input);
-  const ws = fs.createWriteStream(outputPath);
-  if (ext === ".jpg") {
-    rs.pipe(
-      sharp().jpeg({
-        mozjpeg: true,
-      }),
-    ).pipe(ws);
-  } else if (ext === ".png") {
-    rs.pipe(sharp().png({ quality: 80 })).pipe(ws);
-  } else {
-    console.log(`${ext.slice(1)} hasn't provide compress function`);
+      let processor: sharp.Sharp;
+
+      switch (ext) {
+        case "jpg":
+        case "jpeg":
+          processor = sharp().jpeg({
+            quality: 100,
+            optimiseScans: true,
+            mozjpeg: true,
+          });
+          break;
+        case "png":
+          processor = sharp().png({
+            compressionLevel: 9,
+            adaptiveFiltering: true,
+            effort: 10,
+          });
+          break;
+        case "webp":
+          processor = sharp().webp({
+            lossless: true,
+            quality: 100,
+            effort: 6,
+          });
+          break;
+        case "gif":
+          processor = sharp().gif({
+            interPaletteMaxError: 0,
+            dither: 0,
+            effort: 10,
+            reuse: true,
+            progressive: false,
+          });
+          break;
+        default:
+          throw new Error(`Not supported extension: ${ext}`);
+      }
+
+      promisifyPipeline(readStream, processor, writeStream)
+        .then(() => resolve(outputPath))
+        .catch(reject);
+    });
+  } catch (error) {
+    console.error(error);
   }
 }

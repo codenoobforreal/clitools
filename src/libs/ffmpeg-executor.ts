@@ -1,8 +1,9 @@
+import { log } from "@clack/prompts";
 import { spawn } from "child_process";
-import type { ProgressInfo } from "../../types.js";
-import { parseProgressLine } from "./progress-parser.js";
+import { parseProgressLine } from "../core/ffmpeg/progress-parser.js";
+import type { ProgressInfo } from "../types.js";
 
-export function spawnFFmpegProcess(
+function spawnFFmpegProcess(
   args: string[],
   signal?: AbortSignal,
   onProgress?: (progress: ProgressInfo) => void,
@@ -96,7 +97,7 @@ export function spawnFFmpegProcess(
   });
 }
 
-export function spawnFFprobeProcess(
+function spawnFFprobeProcess(
   args: string[],
   signal?: AbortSignal,
 ): Promise<{ out: string; err: string }> {
@@ -140,90 +141,35 @@ export function spawnFFprobeProcess(
   });
 }
 
-// export function spawnFFmpegProcess(
-//   args: string[],
-//   onProgress: (progress: ProgressInfo) => void,
-//   signal?: AbortSignal,
-// ): Promise<{ out: string; err: string }> {
-//   return new Promise((resolve, reject) => {
-//     let stdout = "";
-//     let stderr = "";
-//     let buffer = "";
-//     let currentProgress: Partial<ProgressInfo> = {};
+export async function runFFprobeCommand(args: string[]) {
+  const ac = new AbortController();
+  try {
+    return await spawnFFprobeProcess(args, ac.signal);
+  } catch (error) {
+    if (error instanceof Error) {
+      log.error(error.message);
+    } else {
+      console.error(error);
+    }
+  } finally {
+    ac.abort();
+  }
+}
 
-//     const child = spawn("ffmpeg", args, {
-//       windowsHide: true,
-//       signal,
-//     });
-
-//     const handleError = (error: Error) => {
-//       // child.kill();
-//       reject(Object.assign(error, { stdout, stderr }));
-//     };
-
-//     /**
-//      * block is like:
-//      *
-//      * frame=7
-//      * fps=1.39
-//      * stream_0_0_q=23.5
-//      * bitrate=62916.3kbits/s
-//      * total_size=1572908
-//      * out_time_us=200000
-//      * out_time_ms=200000
-//      * out_time=00:00:00.200000
-//      * dup_frames=0
-//      * drop_frames=0
-//      * speed=0.0397x
-//      * progress=continue
-//      */
-//     const processProgressBlock = () => {
-//       if (Object.keys(currentProgress).length > 0) {
-//         onProgress(currentProgress as ProgressInfo);
-//         currentProgress = {};
-//       }
-//     };
-
-//     child.on("error", handleError);
-
-//     child.on("close", (code, signal) => {
-//       if (buffer.length > 0) {
-//         buffer.split("\n").forEach(processLine);
-//         processProgressBlock();
-//       }
-
-//       if (code === 0) {
-//         resolve({ out: stdout, err: stderr });
-//       } else {
-//         const error = new Error(
-//           `FFmpeg exited with code ${code}${signal ? ` (signal: ${signal})` : ""}`,
-//         );
-//         handleError(Object.assign(error, { code, signal, stdout, stderr }));
-//       }
-//     });
-
-//     child.stdout.on("data", (data) => {
-//       stdout += data.toString();
-//     });
-
-//     child.stderr.on("data", (data) => {
-//       const chunk = data.toString();
-//       stderr += chunk;
-//       buffer += chunk;
-//       const lines = buffer.split(/\r?\n/);
-//       buffer = lines.pop() || "";
-
-//       lines.forEach(processLine);
-//     });
-
-//     const processLine = (line: string) => {
-//       const parsed = parseProgressLine(line);
-//       if (!parsed) return;
-//       Object.assign(currentProgress, parsed);
-//       // dealing line: progress=continue
-//       if (parsed.progress !== undefined) {
-//         processProgressBlock();
-//       }
-//     };
-//   });
-// }
+export async function runFFmpegCommand(
+  args: string[],
+  onProgress?: (progress: ProgressInfo) => void,
+) {
+  const ac = new AbortController();
+  try {
+    return await spawnFFmpegProcess(args, ac.signal, onProgress);
+  } catch (error) {
+    if (error instanceof Error) {
+      log.error(error.message);
+    } else {
+      console.error(error);
+    }
+  } finally {
+    ac.abort();
+  }
+}

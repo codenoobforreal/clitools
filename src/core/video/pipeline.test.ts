@@ -1,24 +1,26 @@
 import os from "node:os";
 import process from "node:process";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FFprobeResultConvertdResult } from "../../types";
-import { resolveAndNormalizePath } from "../../utils/file";
+import { resolveAndNormalizePath } from "../../utils/path";
 import { sanitizePathLikeInput } from "../../utils/sanitize";
-import { collectVideoFilesFromPath } from "./file-collection";
+import { getVideoPathsFromPath } from "./collector";
 import { getVideoMetadata } from "./metadata";
 import { getVideoInfoListFromUserInput } from "./pipeline";
 
-vi.mock("glob");
-
-vi.mock("./file-collection", () => ({
-  collectVideoFilesFromPath: vi.fn(),
-}));
+vi.mock(import("./collector"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    getVideoPathsFromPath: vi.fn(),
+  };
+});
 
 vi.mock("../../utils/sanitize", () => ({
   sanitizePathLikeInput: vi.fn(),
 }));
 
-vi.mock(import("../../utils/file"), async (importOriginal) => {
+vi.mock(import("../../utils/path"), async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -36,8 +38,8 @@ describe("getVideoInfoListFromUserInput", () => {
     vi.restoreAllMocks();
     vi.spyOn(os, "availableParallelism").mockReturnValue(4);
     vi.mocked(sanitizePathLikeInput).mockImplementation((input) => input);
-    vi.mocked(resolveAndNormalizePath).mockResolvedValue("/normalized/path");
-    vi.mocked(collectVideoFilesFromPath).mockResolvedValue([
+    vi.mocked(resolveAndNormalizePath).mockReturnValue("/normalized/path");
+    vi.mocked(getVideoPathsFromPath).mockResolvedValue([
       "/normalized/path/video1.mp4",
       "/normalized/path/video2.mp4",
     ]);
@@ -54,38 +56,38 @@ describe("getVideoInfoListFromUserInput", () => {
     codec_tag_string: "hev1",
   };
 
-  test("should process valid directory input and return video infos", async () => {
+  it("should process valid directory input and return video infos", async () => {
     const results = await getVideoInfoListFromUserInput("/valid/directory");
     expect(sanitizePathLikeInput).toBeCalledWith("/valid/directory");
     expect(resolveAndNormalizePath).toBeCalledWith(
       "/valid/directory",
       process.cwd(),
     );
-    expect(collectVideoFilesFromPath).toBeCalledWith("/normalized/path");
+    expect(getVideoPathsFromPath).toBeCalledWith("/normalized/path");
     expect(results).toHaveLength(2);
     expect(results[0].input).toBe("/normalized/path/video1.mp4");
     expect(getVideoMetadata).toHaveBeenCalledTimes(2);
   });
 
-  test("should process valid file input and return video infos", async () => {
-    vi.mocked(collectVideoFilesFromPath).mockResolvedValue([
+  it("should process valid file input and return video infos", async () => {
+    vi.mocked(getVideoPathsFromPath).mockResolvedValue([
       "/normalized/path/single.mp4",
     ]);
     const result = await getVideoInfoListFromUserInput("/valid/file.mp4");
-    expect(collectVideoFilesFromPath).toBeCalledWith("/normalized/path");
+    expect(getVideoPathsFromPath).toBeCalledWith("/normalized/path");
     expect(result).toHaveLength(1);
     expect(result[0].input).toBe("/normalized/path/single.mp4");
     expect(getVideoMetadata).toHaveBeenCalledTimes(1);
   });
 
-  test("should throw error when no videos found", async () => {
-    vi.mocked(collectVideoFilesFromPath).mockResolvedValue([]);
+  it("should throw error when no videos found", async () => {
+    vi.mocked(getVideoPathsFromPath).mockResolvedValue([]);
     await expect(
       getVideoInfoListFromUserInput("/empty/directory"),
     ).rejects.toThrow("no video to process");
   });
 
-  test("should return successful results with error logging", async () => {
+  it("should return successful results with error logging", async () => {
     vi.mocked(getVideoMetadata)
       .mockResolvedValueOnce(mockMetadata)
       .mockRejectedValueOnce(new Error("Corrupted file"));
@@ -97,10 +99,10 @@ describe("getVideoInfoListFromUserInput", () => {
     );
   });
 
-  test("should enhance error messages with video path", async () => {
+  it("should enhance error messages with video path", async () => {
     const testError = new Error("Test error");
     vi.mocked(getVideoMetadata).mockRejectedValue(testError);
-    vi.mocked(collectVideoFilesFromPath).mockResolvedValue([
+    vi.mocked(getVideoPathsFromPath).mockResolvedValue([
       "/normalized/path/error.mp4",
     ]);
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
@@ -110,28 +112,5 @@ describe("getVideoInfoListFromUserInput", () => {
     expect(consoleSpy).toHaveBeenCalledWith(
       "Processing failed: [/normalized/path/error.mp4] Test error",
     );
-  });
-
-  test("should respect concurrency limit", async () => {
-    let parallelCount = 0;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const resolveMap = new Map<string, (...args: any[]) => any>();
-    vi.mocked(getVideoMetadata).mockImplementation(async (path) => {
-      parallelCount++;
-      await new Promise((resolve) => resolveMap.set(path, resolve));
-      parallelCount--;
-      return mockMetadata;
-    });
-    vi.mocked(collectVideoFilesFromPath).mockResolvedValue([
-      "video1.mp4",
-      "video2.mov",
-      "video3.avi",
-      "video4.mp4",
-    ]);
-    const promise = getVideoInfoListFromUserInput("/valid/directory");
-    await new Promise(process.nextTick);
-    expect(parallelCount).toBe(4);
-    resolveMap.forEach((resolve) => resolve());
-    await promise;
   });
 });

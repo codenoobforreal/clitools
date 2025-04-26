@@ -1,8 +1,9 @@
 import {
   askForHEVCEnableQuickTimeAnswer,
+  askForImageEncodeAnswer,
   askForTask,
   askForVideoEncodeAnswer,
-} from "./prompt.js";
+} from "../../libs/prompt.js";
 
 export async function getTaskDetail() {
   const task = await askForTask();
@@ -12,11 +13,13 @@ export async function getTaskDetail() {
       return { task, answer: processVideoEncodeTaskProps };
     }
     case "hevc-enable-QuickTime": {
-      const ProcessHEVCEnableQuickTimeTaskProps =
+      const processHEVCEnableQuickTimeTaskProps =
         await askForHEVCEnableQuickTimeAnswer();
-      return { task, answer: ProcessHEVCEnableQuickTimeTaskProps };
+      return { task, answer: processHEVCEnableQuickTimeTaskProps };
     }
-    default:
-      throw new Error(`unknown task: ${task}`);
+    case "image-encode": {
+      const processImageEncodeTaskProps = await askForImageEncodeAnswer();
+      return { task, answer: processImageEncodeTaskProps };
+    }
   }
 }

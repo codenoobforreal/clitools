@@ -1,7 +1,7 @@
 import { log } from "@clack/prompts";
-import { checkFFmpegInstallation } from "../../core/ffmpeg/check-install.js";
-import { runFFmpegCommand } from "../../core/ffmpeg/commands.js";
+import { checkFFmpegInstallation } from "../../core/ffmpeg/checker.js";
 import { getVideoInfoListFromUserInput } from "../../core/video/pipeline.js";
+import { runFFmpegCommand } from "../../libs/ffmpeg-executor.js";
 import type { EncodeVideoTaskProps, VideoInfo } from "../../types.js";
 import { createProgressHandler } from "../cli/progress-handler.js";
 import { buildFFmpegEncodeVideoArgs } from "./args.js";

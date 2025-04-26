@@ -6,9 +6,17 @@ export async function isPathDirectory(filepath: string) {
 }
 
 export async function isVideoFile(filepath: string) {
-  return (await fileTypeFromFile(filepath))?.mime.startsWith("video");
+  const result = await fileTypeFromFile(filepath);
+  if (result === undefined) {
+    return false;
+  }
+  return result.mime.startsWith("video");
 }
 
 export async function isImageFile(filepath: string) {
-  return (await fileTypeFromFile(filepath))?.mime.startsWith("image");
+  const result = await fileTypeFromFile(filepath);
+  if (result === undefined) {
+    return false;
+  }
+  return result.mime.startsWith("image");
 }
