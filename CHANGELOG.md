@@ -1,5 +1,11 @@
 # @codenoobforreal/clitools
 
+## 0.4.0
+
+### Minor Changes
+
+- be78807: Added batch lossless image compression with support for JPEG, PNG, WebP, and GIF formats, accessible via the CLI.
+
 ## 0.3.0
 
 ### Minor Changes
