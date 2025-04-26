@@ -19,7 +19,7 @@ npx @codenoobforreal/clitools
 
 - **环境依赖**​：  
   本功能需要安装 [FFmpeg](https://ffmpeg.org)  
-  [安装指南](#ffmpeg-installation-guide)
+  [安装指南](#ffmpeg-install-guide)
 
 ### QuickTime兼容性修复
 
@@ -27,7 +27,7 @@ npx @codenoobforreal/clitools
 
 - ​**环境依赖**​：  
   本功能需要安装 [FFmpeg](https://ffmpeg.org)  
-  [安装指南](#ffmpeg-installation-guide)
+  [安装指南](#ffmpeg-install-guide)
 
 ### 批量无损图片压缩
 

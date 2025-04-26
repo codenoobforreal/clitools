@@ -1,6 +1,6 @@
 import os from "node:os";
 import process from "node:process";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FFprobeResultConvertdResult } from "../../types";
 import { resolveAndNormalizePath } from "../../utils/path";
 import { sanitizePathLikeInput } from "../../utils/sanitize";
@@ -56,7 +56,7 @@ describe("getVideoInfoListFromUserInput", () => {
     codec_tag_string: "hev1",
   };
 
-  test("should process valid directory input and return video infos", async () => {
+  it("should process valid directory input and return video infos", async () => {
     const results = await getVideoInfoListFromUserInput("/valid/directory");
     expect(sanitizePathLikeInput).toBeCalledWith("/valid/directory");
     expect(resolveAndNormalizePath).toBeCalledWith(
@@ -69,7 +69,7 @@ describe("getVideoInfoListFromUserInput", () => {
     expect(getVideoMetadata).toHaveBeenCalledTimes(2);
   });
 
-  test("should process valid file input and return video infos", async () => {
+  it("should process valid file input and return video infos", async () => {
     vi.mocked(getVideoPathsFromPath).mockResolvedValue([
       "/normalized/path/single.mp4",
     ]);
@@ -80,14 +80,14 @@ describe("getVideoInfoListFromUserInput", () => {
     expect(getVideoMetadata).toHaveBeenCalledTimes(1);
   });
 
-  test("should throw error when no videos found", async () => {
+  it("should throw error when no videos found", async () => {
     vi.mocked(getVideoPathsFromPath).mockResolvedValue([]);
     await expect(
       getVideoInfoListFromUserInput("/empty/directory"),
     ).rejects.toThrow("no video to process");
   });
 
-  test("should return successful results with error logging", async () => {
+  it("should return successful results with error logging", async () => {
     vi.mocked(getVideoMetadata)
       .mockResolvedValueOnce(mockMetadata)
       .mockRejectedValueOnce(new Error("Corrupted file"));
@@ -99,7 +99,7 @@ describe("getVideoInfoListFromUserInput", () => {
     );
   });
 
-  test("should enhance error messages with video path", async () => {
+  it("should enhance error messages with video path", async () => {
     const testError = new Error("Test error");
     vi.mocked(getVideoMetadata).mockRejectedValue(testError);
     vi.mocked(getVideoPathsFromPath).mockResolvedValue([

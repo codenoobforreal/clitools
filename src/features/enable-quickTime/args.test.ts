@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { VideoInfo } from "../../types";
 import { buildHEVCEnableQuickTimeArgs } from "./args";
 
@@ -9,7 +9,7 @@ describe("buildHEVCEnableQuickTimeArgs", () => {
   afterEach(() => {
     vi.useRealTimers();
   });
-  test("should build command with basic configuration", () => {
+  it("should build command with basic configuration", () => {
     vi.setSystemTime(new Date("2000-01-01T00:00:00"));
     const config: VideoInfo = {
       input: "input.mp4",

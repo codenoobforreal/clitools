@@ -23,7 +23,9 @@ export async function imageEncodeTask({ input }: EncodeImageTaskProps) {
   const failureList: Array<Error> = [];
   results.forEach((result) => {
     if (result.status === "fulfilled") {
-      successList.push(result.value);
+      if (result.value) {
+        successList.push(result.value);
+      }
     } else {
       const error =
         result.reason instanceof Error

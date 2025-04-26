@@ -1,4 +1,4 @@
-import { runFFprobeCommand } from "../../libs/ffmpeg-excutor.js";
+import { runFFprobeCommand } from "../../libs/ffmpeg-executor.js";
 import type { FFprobeResultConvertdResult } from "../../types.js";
 import { FFprobeCommandBuilder } from "../ffmpeg/command-builder.js";
 

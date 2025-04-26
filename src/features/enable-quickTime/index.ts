@@ -1,7 +1,7 @@
 import { log } from "@clack/prompts";
 import { checkFFmpegInstallation } from "../../core/ffmpeg/checker.js";
 import { getVideoInfoListFromUserInput } from "../../core/video/pipeline.js";
-import { runFFmpegCommand } from "../../libs/ffmpeg-excutor.js";
+import { runFFmpegCommand } from "../../libs/ffmpeg-executor.js";
 import type { EnableHEVCQuickTimeTaskProps, VideoInfo } from "../../types.js";
 import { buildHEVCEnableQuickTimeArgs } from "./args.js";
 

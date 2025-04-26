@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import which from "which";
 import { checkFFmpegInstallation } from "./checker";
 
@@ -7,7 +7,7 @@ describe("checkFFmpegInstallation", () => {
     vi.restoreAllMocks();
   });
 
-  test("should not throw when both ffmpeg and ffprobe are installed", () => {
+  it("should not throw when both ffmpeg and ffprobe are installed", () => {
     vi.spyOn(which, "sync")
       .mockReturnValueOnce("/usr/bin/ffmpeg")
       .mockReturnValueOnce("/usr/bin/ffprobe");
@@ -15,7 +15,7 @@ describe("checkFFmpegInstallation", () => {
     expect(checkFFmpegInstallation).not.toThrow();
   });
 
-  test("should throw missing ffmpeg error", () => {
+  it("should throw missing ffmpeg error", () => {
     vi.spyOn(which, "sync")
       .mockImplementationOnce(() => {
         throw new Error("not found");
@@ -27,7 +27,7 @@ describe("checkFFmpegInstallation", () => {
     );
   });
 
-  test("should throw missing ffprobe error", () => {
+  it("should throw missing ffprobe error", () => {
     vi.spyOn(which, "sync")
       .mockReturnValueOnce("/usr/bin/ffmpeg")
       .mockImplementationOnce(() => {
@@ -39,7 +39,7 @@ describe("checkFFmpegInstallation", () => {
     );
   });
 
-  test("should throw both error", () => {
+  it("should throw both error", () => {
     vi.spyOn(which, "sync").mockImplementation(() => {
       throw new Error("not found");
     });

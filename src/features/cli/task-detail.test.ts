@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   askForHEVCEnableQuickTimeAnswer,
   askForImageEncodeAnswer,
@@ -19,7 +19,7 @@ describe("getTaskDetail", () => {
     vi.clearAllMocks();
   });
 
-  test("should return video encode task details", async () => {
+  it("should return video encode task details", async () => {
     vi.mocked(askForTask).mockResolvedValue("video-encode");
     const mockAnswer = { input: "test.mp4" };
     vi.mocked(askForVideoEncodeAnswer).mockResolvedValue(mockAnswer);
@@ -28,7 +28,7 @@ describe("getTaskDetail", () => {
     expect(askForVideoEncodeAnswer).toHaveBeenCalled();
   });
 
-  test("should return HEVC QuickTime enable details", async () => {
+  it("should return HEVC QuickTime enable details", async () => {
     vi.mocked(askForTask).mockResolvedValue("hevc-enable-QuickTime");
     const mockAnswer = { input: "test.mp4" };
     vi.mocked(askForHEVCEnableQuickTimeAnswer).mockResolvedValue(mockAnswer);
@@ -40,7 +40,7 @@ describe("getTaskDetail", () => {
     expect(askForHEVCEnableQuickTimeAnswer).toHaveBeenCalled();
   });
 
-  test("should return image encode task details", async () => {
+  it("should return image encode task details", async () => {
     vi.mocked(askForTask).mockResolvedValue("image-encode");
     const mockAnswer = { input: "test.jpg" };
     vi.mocked(askForImageEncodeAnswer).mockResolvedValue(mockAnswer);

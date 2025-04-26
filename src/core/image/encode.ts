@@ -7,9 +7,9 @@ import { getFileExt } from "../../utils/path.js";
 
 const promisifyPipeline = util.promisify(pipeline);
 
-export function encodeImage(input: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    try {
+export async function encodeImage(input: string) {
+  try {
+    return await new Promise<string>((resolve, reject) => {
       const ext = getFileExt(input).toLowerCase();
       const outputPath = generateOutputPath(input, ext);
 
@@ -57,8 +57,8 @@ export function encodeImage(input: string): Promise<string> {
       promisifyPipeline(readStream, processor, writeStream)
         .then(() => resolve(outputPath))
         .catch(reject);
-    } catch (error) {
-      reject(error);
-    }
-  });
+    });
+  } catch (error) {
+    console.error(error);
+  }
 }

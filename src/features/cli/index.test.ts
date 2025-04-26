@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { askForContinue } from "../../libs/prompt";
 import { enableHEVCQuickTimeTask } from "../enable-quickTime";
 import { imageEncodeTask } from "../encode-image";
@@ -31,7 +31,7 @@ describe("runCli", () => {
     vi.clearAllMocks();
   });
 
-  test("should early return void without continue", async () => {
+  it("should early return void without continue", async () => {
     const mockAnswer = { input: "test.mp4" };
     const mockTaskDetail = {
       task: "video-encode" as const,
@@ -45,7 +45,7 @@ describe("runCli", () => {
     expect(imageEncodeTask).not.toHaveBeenCalled();
   });
 
-  test("should execute video encode task with parameters", async () => {
+  it("should execute video encode task with parameters", async () => {
     const mockAnswer = { input: "test.mp4" };
     const mockTaskDetail = {
       task: "video-encode" as const,
@@ -59,7 +59,7 @@ describe("runCli", () => {
     expect(imageEncodeTask).not.toHaveBeenCalled();
   });
 
-  test("should execute HEVC QuickTime enable task", async () => {
+  it("should execute HEVC QuickTime enable task", async () => {
     const mockAnswer = { input: "test.mp4" };
     const mockTaskDetail = {
       task: "hevc-enable-QuickTime" as const,
@@ -73,7 +73,7 @@ describe("runCli", () => {
     expect(imageEncodeTask).not.toHaveBeenCalled();
   });
 
-  test("should execute image encode task with parameters", async () => {
+  it("should execute image encode task with parameters", async () => {
     const mockAnswer = { input: "test.jpg" };
     const mockTaskDetail = {
       task: "image-encode" as const,
