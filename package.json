@@ -1,17 +1,19 @@
 {
   "name": "@codenoobforreal/clitools",
   "version": "0.4.0",
-  "description": "CLI tool for batch H.265 video encoding with recommended quality settings using FFmpeg",
+  "description": "CLI tool for video processing (H.265/HEVC encoding & QuickTime compatibility) using FFmpeg, and batch lossless image compression with format preservation.",
   "keywords": [
-    "cli",
+    "cli-tool",
     "video-encoding",
     "h265",
     "hevc",
     "ffmpeg",
-    "video-processing",
+    "QuickTime-compatibility",
     "batch-processing",
-    "transcoding",
-    "automation"
+    "lossless-compression",
+    "image-optimization",
+    "video-conversion",
+    "image-compression"
   ],
   "homepage": "https://github.com/codenoobforreal/clitools",
   "type": "module",
