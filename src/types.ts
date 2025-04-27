@@ -55,13 +55,13 @@ export interface ProgressInfo {
   progress?: "continue" | "end";
 }
 
+export interface ImageInfo {
+  input: string;
+}
+
 export interface VideoInfo {
   input: string;
   metadata: FFprobeResultConvertdResult;
-}
-
-export interface ImageInfo {
-  input: string;
 }
 
 export interface FFprobeResultConvertdResult {

@@ -1,3 +1,9 @@
+import {
+  FFprobeProcessError,
+  KVError,
+  RequiredFieldError,
+  StringToNumberCovertError,
+} from "../../error.js";
 import { runFFprobeCommand } from "../../libs/ffmpeg-executor.js";
 import type { FFprobeResultConvertdResult } from "../../types.js";
 import { FFprobeCommandBuilder } from "../ffmpeg/command-builder.js";
@@ -6,15 +12,11 @@ export async function getVideoMetadata(
   videoPath: string,
 ): Promise<FFprobeResultConvertdResult | null> {
   const getVideoMetaDataArgs = buildFFprobeMetadataArgs(videoPath);
-  const res = await runFFprobeCommand(getVideoMetaDataArgs);
-  if (res === undefined) {
-    return null;
-  }
-  const { out, err } = res;
+
+  const { out, err } = await runFFprobeCommand(getVideoMetaDataArgs);
   // out will be empty string and err will be error message when ffprobe got error
   if (out === "") {
-    // TODO: custom ffprobe error
-    throw new Error(err);
+    throw new FFprobeProcessError("FFprobe handle error", new Error(err));
   }
   return convertFFprobeResult(out);
 }
@@ -37,8 +39,8 @@ export function convertFFprobeResult(
 
   const parseKeyValue = (line: string): [string, string] => {
     const eqIndex = line.indexOf("=");
-    if (eqIndex === -1 || eqIndex === 0) {
-      throw new Error(`Invalid key-value format: ${line}`);
+    if (eqIndex === -1 || eqIndex === 0 || eqIndex === line.length - 1) {
+      throw new KVError("Invalid key-value format", line);
     }
     return [line.slice(0, eqIndex), line.slice(eqIndex + 1)];
   };
@@ -46,7 +48,7 @@ export function convertFFprobeResult(
   const validateNumber = (value: string, key: string): number => {
     const num = Number(value);
     if (!value.trim() || Number.isNaN(num)) {
-      throw new Error(`Invalid ${key} value: ${value}`);
+      throw new StringToNumberCovertError(`Invalid ${key} value`, value);
     }
     return num;
   };
@@ -80,9 +82,9 @@ export function convertFFprobeResult(
   }
 
   if (requiredFields.size > 0) {
-    throw new Error(
-      `Missing required fields: ${[...requiredFields].join(", ")}`,
-    );
+    throw new RequiredFieldError("Missing required fields", [
+      ...requiredFields,
+    ]);
   }
 
   return resultObject as FFprobeResultConvertdResult;

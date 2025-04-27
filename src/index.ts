@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import { log } from "@clack/prompts";
+import { NothingToProcessError } from "./error.js";
 import { runCli } from "./features/cli/index.js";
 import { isErrnoException } from "./types.js";
 
@@ -15,10 +17,10 @@ async function main() {
     // ELOOP	Symbolic link loop
     if (isErrnoException(error)) {
       if (error.code === "ENOENT") {
-        console.log(`no such path:\n${error.path}`);
+        log.error(`no such path:\n${error.path}`);
       }
-    } else {
-      console.log(error);
+    } else if (error instanceof NothingToProcessError) {
+      log.error(error.message);
     }
   }
 }

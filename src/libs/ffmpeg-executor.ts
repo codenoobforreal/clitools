@@ -1,6 +1,10 @@
-import { log } from "@clack/prompts";
 import { spawn } from "child_process";
 import { parseProgressLine } from "../core/ffmpeg/progress-parser.js";
+import {
+  FFmpegProcessError,
+  FFprobeProcessError,
+  SpawnProcessError,
+} from "../error.js";
 import type { ProgressInfo } from "../types.js";
 
 function spawnFFmpegProcess(
@@ -25,7 +29,7 @@ function spawnFFmpegProcess(
 
     const handleError = (error: Error) => {
       if (!child.killed) child.kill();
-      reject(Object.assign(error, { out, err }));
+      reject(new SpawnProcessError(error.message, err, error));
     };
 
     /**
@@ -72,10 +76,11 @@ function spawnFFmpegProcess(
       if (code === 0) {
         resolve({ out, err });
       } else {
-        const error = new Error(
-          `FFmpeg exited with code ${code}${signal ? ` (signal: ${signal})` : ""}`,
+        handleError(
+          new Error(
+            `FFmpeg exited with code ${code}${signal ? ` (signal: ${signal})` : ""}`,
+          ),
         );
-        handleError(Object.assign(error, { code, signal, out, err }));
       }
     });
 
@@ -108,33 +113,30 @@ function spawnFFprobeProcess(
       windowsHide: true,
       signal,
     });
-
     const handleError = (error: Error) => {
       if (!child.killed) child.kill();
-      reject(Object.assign(error, { out, err }));
+      reject(new SpawnProcessError(error.message, err, error));
     };
-
     signal?.addEventListener("abort", () => {
       if (!child.killed) child.kill("SIGKILL");
     });
-
     child.stdout.setEncoding("utf8");
     child.stderr.setEncoding("utf8");
-
     child.on("error", handleError);
-
-    child.on("close", (code) => {
+    child.on("close", (code, signal) => {
       if (code !== 0) {
-        reject(new Error(`ffprobe exited with code ${code}: ${err}`));
+        handleError(
+          new Error(
+            `FFprobe exited with code ${code}${signal ? ` (signal: ${signal})` : ""}`,
+          ),
+        );
       } else {
         resolve({ out, err });
       }
     });
-
     child.stdout.on("data", (data: string) => {
       out += data;
     });
-
     child.stderr.on("data", (data: string) => {
       err += data;
     });
@@ -146,10 +148,11 @@ export async function runFFprobeCommand(args: string[]) {
   try {
     return await spawnFFprobeProcess(args, ac.signal);
   } catch (error) {
-    if (error instanceof Error) {
-      log.error(error.message);
+    // TODO: report to console with a better way
+    if (error instanceof SpawnProcessError) {
+      throw new FFprobeProcessError("ffprobe process error", error);
     } else {
-      console.error(error);
+      throw error;
     }
   } finally {
     ac.abort();
@@ -164,10 +167,11 @@ export async function runFFmpegCommand(
   try {
     return await spawnFFmpegProcess(args, ac.signal, onProgress);
   } catch (error) {
-    if (error instanceof Error) {
-      log.error(error.message);
+    // TODO: report to console with a better way
+    if (error instanceof SpawnProcessError) {
+      throw new FFmpegProcessError("ffmpeg process error", error);
     } else {
-      console.error(error);
+      throw error;
     }
   } finally {
     ac.abort();
