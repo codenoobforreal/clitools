@@ -1,5 +1,11 @@
 # @codenoobforreal/clitools
 
+## 0.5.0
+
+### Minor Changes
+
+- bd1bfad: support bit depth encoding
+
 ## 0.4.0
 
 ### Minor Changes
