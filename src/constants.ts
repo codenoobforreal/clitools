@@ -1,16 +1,19 @@
 export const SUPPORT_VIDEO_EXT = [
   "avi",
+  "dash",
   "flv",
-  "mp4",
+  "m4v",
   "mkv",
   "mov",
+  "mp4",
+  "mpeg",
   "rmvb",
   "ts",
   "webm",
   "wmv",
 ] as const;
 
-export const SUPPORT_IMAGE_EXT = ["jpg", "jpeg", "png", "webp", "gif"] as const;
+export const SUPPORT_IMAGE_EXT = ["gif", "jpeg", "jpg", "png", "webp"] as const;
 
 export const TASK_TYPE = [
   "video-encode",
