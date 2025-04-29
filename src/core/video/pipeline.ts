@@ -1,5 +1,9 @@
 import os from "node:os";
 import pLimit from "p-limit";
+import {
+  ExtractVideoMetadataError,
+  NothingToProcessError,
+} from "../../error.js";
 import type { VideoInfo } from "../../types.js";
 import { resolveAndNormalizePath } from "../../utils/path.js";
 import { sanitizePathLikeInput } from "../../utils/sanitize.js";
@@ -13,20 +17,18 @@ export async function getMetadataToVideoList(videoPaths: string[]) {
   const processSingleVideo = async (videoPath: string) => {
     try {
       const metadata = await getVideoMetadata(videoPath);
-
       if (!metadata) {
-        throw new Error(`Metadata extraction failed for ${videoPath}`);
+        throw new ExtractVideoMetadataError("Metadata extraction failed");
       }
-
       return {
         input: videoPath,
         metadata,
       };
     } catch (error) {
       const normalizedError =
-        error instanceof Error
+        error instanceof ExtractVideoMetadataError
           ? error
-          : new Error(`Unknown error: ${String(error)}`);
+          : new Error(`Unknown error`, { cause: error });
       normalizedError.message = `[${videoPath}] ${normalizedError.message}`;
       throw normalizedError;
     }
@@ -36,24 +38,20 @@ export async function getMetadataToVideoList(videoPaths: string[]) {
     const tasks = videoPaths.map((path) =>
       limit(() => processSingleVideo(path)),
     );
-
     const results = await Promise.allSettled(tasks);
-
     const successfulResults: VideoInfo[] = [];
-    const errorLogger = console.error.bind(console);
-
+    // const errorLogger = console.error.bind(console);
     results.forEach((result) => {
       if (result.status === "fulfilled") {
         successfulResults.push(result.value);
       } else {
-        errorLogger(`Processing failed: ${result.reason.message}`);
         // TODO: report error
+        // errorLogger(`Processing failed: ${result.reason.message}`);
       }
     });
-
     return successfulResults;
-  } catch (error) {
-    console.error("Unexpected pipeline error:", error);
+  } catch {
+    // console.error("Unexpected pipeline error:", error);
     return [];
   }
 }
@@ -65,9 +63,22 @@ export async function getVideoInfoListFromUserInput(
   const normalizedPath = resolveAndNormalizePath(sanitizedPath, process.cwd());
   const collectedVideoPaths: string[] =
     await getVideoPathsFromPath(normalizedPath);
-  // TODO: scan error class
   if (collectedVideoPaths.length === 0) {
-    throw new Error("no video to process");
+    throw new NothingToProcessError("No supported video files found");
   }
-  return await getMetadataToVideoList(collectedVideoPaths);
+  const videoInfoList = await getMetadataToVideoList(collectedVideoPaths);
+  if (videoInfoList.length === 0) {
+    throw new NothingToProcessError(
+      "No processable videos with valid metadata available",
+    );
+  }
+  return videoInfoList;
+}
+
+export function filterHev1Video(videoInfoList: VideoInfo[]) {
+  return videoInfoList.filter(
+    (v) =>
+      v.metadata.codec_name === "hevc" &&
+      v.metadata.codec_tag_string === "hev1",
+  );
 }

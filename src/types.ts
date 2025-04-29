@@ -55,13 +55,13 @@ export interface ProgressInfo {
   progress?: "continue" | "end";
 }
 
+export interface ImageInfo {
+  input: string;
+}
+
 export interface VideoInfo {
   input: string;
   metadata: FFprobeResultConvertdResult;
-}
-
-export interface ImageInfo {
-  input: string;
 }
 
 export interface FFprobeResultConvertdResult {
@@ -69,9 +69,11 @@ export interface FFprobeResultConvertdResult {
   codec_tag_string: string;
   width: number;
   height: number;
-  avg_frame_rate: number;
+  pix_fmt: string;
+  // avg_frame_rate: number;
   duration: number;
-  bit_rate: number;
+  // bit_rate: number;
+  bits_per_raw_sample: number;
 }
 
 export type TaskType = (typeof TASK_TYPE)[number];

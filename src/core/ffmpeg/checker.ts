@@ -1,5 +1,6 @@
 import { platform } from "node:process";
 import which from "which";
+import { MissingBinariesError } from "../../error.js";
 
 export function checkFFmpegInstallation(): void {
   const missingTools: string[] = [];
@@ -41,6 +42,6 @@ export function checkFFmpegInstallation(): void {
       `Installation recommendation:\n${installationCommand}\n` +
       "Note: ffprobe is typically included in ffmpeg packages. Ensure your package manager installs both tools.";
 
-    throw new Error(errorMessage);
+    throw new MissingBinariesError(errorMessage);
   }
 }

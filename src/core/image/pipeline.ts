@@ -1,3 +1,4 @@
+import { NothingToProcessError } from "../../error.js";
 import { resolveAndNormalizePath } from "../../utils/path.js";
 import { sanitizePathLikeInput } from "../../utils/sanitize.js";
 import { getImagePathsFromPath } from "./collector.js";
@@ -11,7 +12,7 @@ export async function getImageListFromUserInput(
     await getImagePathsFromPath(normalizedPath);
   // TODO: scan error class
   if (collectedImagePaths.length === 0) {
-    throw new Error("no image to process");
+    throw new NothingToProcessError("no image to process");
   }
   return collectedImagePaths;
 }

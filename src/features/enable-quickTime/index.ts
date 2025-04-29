@@ -1,35 +1,48 @@
-import { log } from "@clack/prompts";
-import { checkFFmpegInstallation } from "../../core/ffmpeg/checker.js";
-import { getVideoInfoListFromUserInput } from "../../core/video/pipeline.js";
+import { spinner } from "@clack/prompts";
+import {
+  filterHev1Video,
+  getVideoInfoListFromUserInput,
+} from "../../core/video/pipeline.js";
+import { FFmpegProcessError, NothingToProcessError } from "../../error.js";
 import { runFFmpegCommand } from "../../libs/ffmpeg-executor.js";
 import type { EnableHEVCQuickTimeTaskProps, VideoInfo } from "../../types.js";
+import { getFileNameFromPath } from "../../utils/path.js";
 import { buildHEVCEnableQuickTimeArgs } from "./args.js";
 
 export async function enableHEVCQuickTimeTask({
   input,
 }: EnableHEVCQuickTimeTaskProps) {
-  checkFFmpegInstallation();
-
   const videoInfoList: VideoInfo[] = await getVideoInfoListFromUserInput(input);
-
-  const filterHev1Videos = videoInfoList.filter(
-    (v) =>
-      v.metadata.codec_name === "hevc" &&
-      v.metadata.codec_tag_string === "hev1",
-  );
-
-  for (let index = 0; index < filterHev1Videos.length; index++) {
-    const videoInfo = filterHev1Videos[index];
+  const filteredVideos = filterHev1Video(videoInfoList);
+  if (filteredVideos.length === 0) {
+    throw new NothingToProcessError("No hev1 videos found");
+  }
+  for (let index = 0; index < filteredVideos.length; index++) {
+    const videoInfo = filteredVideos[index];
     if (videoInfo !== undefined) {
-      log.message(
-        `processing ${index + 1}/${filterHev1Videos.length}:\n${videoInfo.input}`,
-      );
-      const result = await runFFmpegCommand(
-        buildHEVCEnableQuickTimeArgs(videoInfo),
-      );
-      if (result) {
-        log.success("complete!");
-      }
+      await enableHEVCQuickTime(videoInfo, index, filteredVideos.length);
     }
+  }
+}
+
+async function enableHEVCQuickTime(
+  videoInfo: VideoInfo,
+  index: number,
+  length: number,
+) {
+  const s = spinner();
+  const filename = getFileNameFromPath(videoInfo.input);
+  s.start(`Remuxing: ${filename}`);
+  try {
+    await runFFmpegCommand(buildHEVCEnableQuickTimeArgs(videoInfo));
+    s.stop(`Finish remuxing ${index + 1}/${length}:\n${videoInfo.input}`);
+  } catch (error) {
+    let errMessage: string = `Failed to remux: ${videoInfo.input}\nerror: `;
+    if (error instanceof FFmpegProcessError) {
+      errMessage += error.cause.message;
+    } else {
+      errMessage += "unknown error";
+    }
+    s.stop(errMessage);
   }
 }

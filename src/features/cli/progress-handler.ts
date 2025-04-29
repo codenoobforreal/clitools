@@ -1,15 +1,21 @@
 import type { ProgressInfo } from "../../types.js";
 import { formatSeconds } from "../../utils/date.js";
 
-export function createProgressHandler(totalDuration: number) {
+export function createProgressHandler(
+  totalDuration: number,
+  messageHandler: {
+    message: (msg?: string) => void;
+  },
+) {
   let lastUpdate = 0;
   let remaining = 0;
-  // const p = progress({ max: 100 });
+
   return (progress: ProgressInfo) => {
-    if (!progress.out_time_ms || progress.speed === undefined) return;
+    if (progress.out_time_ms === undefined || progress.speed === undefined)
+      return;
 
     if (progress.progress === "end") {
-      // log.message(`100%`);
+      messageHandler.message(`[100%] eta: 00:00:00`);
       return;
     }
 
@@ -29,8 +35,9 @@ export function createProgressHandler(totalDuration: number) {
       );
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const eta = formatSeconds(remaining);
-    // log.message(`[${percentage.toFixed(1).padStart(5)}%] eta: ${eta}`);
+    messageHandler.message(
+      `[${percentage.toFixed(2).padStart(6)}%] eta: ${eta}`,
+    );
   };
 }

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import { pipeline } from "node:stream";
 import util from "node:util";
 import sharp from "sharp";
+import { EncodeImageError, NotSupportedError } from "../../error.js";
 import { generateOutputPath } from "../../utils/output-generator.js";
 import { getFileExt } from "../../utils/path.js";
 
@@ -9,56 +10,53 @@ const promisifyPipeline = util.promisify(pipeline);
 
 export async function encodeImage(input: string) {
   try {
-    return await new Promise<string>((resolve, reject) => {
-      const ext = getFileExt(input).toLowerCase();
-      const outputPath = generateOutputPath(input, ext);
-
-      const readStream = fs.createReadStream(input);
-      const writeStream = fs.createWriteStream(outputPath);
-
-      let processor: sharp.Sharp;
-
-      switch (ext) {
-        case "jpg":
-        case "jpeg":
-          processor = sharp().jpeg({
-            quality: 100,
-            optimiseScans: true,
-            mozjpeg: true,
-          });
-          break;
-        case "png":
-          processor = sharp().png({
-            compressionLevel: 9,
-            adaptiveFiltering: true,
-            effort: 10,
-          });
-          break;
-        case "webp":
-          processor = sharp().webp({
-            lossless: true,
-            quality: 100,
-            effort: 6,
-          });
-          break;
-        case "gif":
-          processor = sharp().gif({
-            interPaletteMaxError: 0,
-            dither: 0,
-            effort: 10,
-            reuse: true,
-            progressive: false,
-          });
-          break;
-        default:
-          throw new Error(`Not supported extension: ${ext}`);
-      }
-
-      promisifyPipeline(readStream, processor, writeStream)
-        .then(() => resolve(outputPath))
-        .catch(reject);
-    });
+    const ext = getFileExt(input).toLowerCase();
+    const outputPath = generateOutputPath(input, ext);
+    const readStream = fs.createReadStream(input);
+    const writeStream = fs.createWriteStream(outputPath);
+    let processor: sharp.Sharp;
+    switch (ext) {
+      case "jpg":
+      case "jpeg":
+        processor = sharp().jpeg({
+          quality: 100,
+          optimiseScans: true,
+          mozjpeg: true,
+        });
+        break;
+      case "png":
+        processor = sharp().png({
+          compressionLevel: 9,
+          adaptiveFiltering: true,
+          effort: 10,
+        });
+        break;
+      case "webp":
+        processor = sharp().webp({
+          lossless: true,
+          quality: 100,
+          effort: 6,
+        });
+        break;
+      case "gif":
+        processor = sharp().gif({
+          interPaletteMaxError: 0,
+          dither: 0,
+          effort: 10,
+          reuse: true,
+          progressive: false,
+        });
+        break;
+      default:
+        throw new NotSupportedError(`Not supported extension: ${ext}`);
+    }
+    await promisifyPipeline(readStream, processor, writeStream);
+    return outputPath;
   } catch (error) {
-    console.error(error);
+    if (error instanceof NotSupportedError || error instanceof Error) {
+      throw new EncodeImageError(error.message, error);
+    } else {
+      throw error;
+    }
   }
 }
