@@ -6,6 +6,7 @@ import {
 import { FFmpegProcessError, NothingToProcessError } from "../../error.js";
 import { runFFmpegCommand } from "../../libs/ffmpeg-executor.js";
 import type { EnableHEVCQuickTimeTaskProps, VideoInfo } from "../../types.js";
+import { getFileNameFromPath } from "../../utils/path.js";
 import { buildHEVCEnableQuickTimeArgs } from "./args.js";
 
 export async function enableHEVCQuickTimeTask({
@@ -30,7 +31,8 @@ async function enableHEVCQuickTime(
   length: number,
 ) {
   const s = spinner();
-  s.start(`Remuxing: ${videoInfo.input}`);
+  const filename = getFileNameFromPath(videoInfo.input);
+  s.start(`Remuxing: ${filename}`);
   try {
     await runFFmpegCommand(buildHEVCEnableQuickTimeArgs(videoInfo));
     s.stop(`Finish remuxing ${index + 1}/${length}:\n${videoInfo.input}`);

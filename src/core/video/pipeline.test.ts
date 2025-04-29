@@ -2,9 +2,12 @@ import os from "node:os";
 import process from "node:process";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NothingToProcessError } from "../../error";
-import { FFprobeResultConvertdResult, VideoInfo } from "../../types";
 import { resolveAndNormalizePath } from "../../utils/path";
 import { sanitizePathLikeInput } from "../../utils/sanitize";
+import {
+  createFFprobeResultConvertdResult,
+  createVideoInfo,
+} from "../../utils/test-utils";
 import { getVideoPathsFromPath } from "./collector";
 import { getVideoMetadata } from "./metadata";
 import { filterHev1Video, getVideoInfoListFromUserInput } from "./pipeline";
@@ -47,15 +50,7 @@ describe("getVideoInfoListFromUserInput", () => {
     vi.mocked(getVideoMetadata).mockResolvedValue(mockMetadata);
   });
 
-  const mockMetadata: FFprobeResultConvertdResult = {
-    width: 720,
-    height: 480,
-    duration: 100.5,
-    avg_frame_rate: 24,
-    bit_rate: 1,
-    codec_name: "hevc",
-    codec_tag_string: "hev1",
-  };
+  const mockMetadata = createFFprobeResultConvertdResult();
 
   it("should process valid directory input and return video infos", async () => {
     const results = await getVideoInfoListFromUserInput("/valid/directory");
@@ -109,25 +104,36 @@ describe("getVideoInfoListFromUserInput", () => {
 });
 
 describe("filterHev1Video", () => {
-  const createVideoInfo = (codec: string, tag: string): VideoInfo => ({
-    input: "test.mp4",
-    metadata: {
-      codec_name: codec,
-      codec_tag_string: tag,
-      width: 1920,
-      height: 1080,
-      avg_frame_rate: 30,
-      duration: 60,
-      bit_rate: 5000000,
-    },
-  });
-
   it("should return videos with hevc codec and hev1 tag", () => {
     const videos = [
-      createVideoInfo("hevc", "hev1"),
-      createVideoInfo("hevc", "hvc1"),
-      createVideoInfo("avc1", "hev1"),
-      createVideoInfo("avc1", "avc1"),
+      createVideoInfo({
+        metadata: {
+          codec_name: "hevc",
+          codec_tag_string: "hev1",
+        },
+      }),
+      createVideoInfo({
+        metadata: {
+          codec_name: "hevc",
+          codec_tag_string: "hvc1",
+        },
+      }),
+      createVideoInfo({
+        metadata: {
+          codec_name: "avc1",
+          codec_tag_string: "hev1",
+        },
+      }),
+      createVideoInfo({
+        metadata: {
+          codec_name: "avc1",
+          codec_tag_string: "avc1",
+        },
+      }),
+      // createVideoInfo("hevc", "hev1"),
+      // createVideoInfo("hevc", "hvc1"),
+      // createVideoInfo("avc1", "hev1"),
+      // createVideoInfo("avc1", "avc1"),
     ];
     const result = filterHev1Video(videos);
     expect(result).toMatchObject([videos[0]]);
@@ -135,8 +141,20 @@ describe("filterHev1Video", () => {
 
   it("should return empty array when no videos match criteria", () => {
     const videos = [
-      createVideoInfo("avc1", "hvc1"),
-      createVideoInfo("vp9", "hev1"),
+      createVideoInfo({
+        metadata: {
+          codec_name: "avc1",
+          codec_tag_string: "hvc1",
+        },
+      }),
+      createVideoInfo({
+        metadata: {
+          codec_name: "vp9",
+          codec_tag_string: "hev1",
+        },
+      }),
+      // createVideoInfo("avc1", "hvc1"),
+      // createVideoInfo("vp9", "hev1"),
     ];
     expect(filterHev1Video(videos)).toEqual([]);
   });
@@ -146,8 +164,18 @@ describe("filterHev1Video", () => {
   });
 
   it("should strictly check both codec and tag", () => {
-    const partialMatch1 = createVideoInfo("hevc", "hvc1");
-    const partialMatch2 = createVideoInfo("avc1", "hev1");
+    const partialMatch1 = createVideoInfo({
+      metadata: {
+        codec_name: "hevc",
+        codec_tag_string: "hvc1",
+      },
+    });
+    const partialMatch2 = createVideoInfo({
+      metadata: {
+        codec_name: "avc1",
+        codec_tag_string: "hev1",
+      },
+    });
     const result = filterHev1Video([partialMatch1, partialMatch2]);
     expect(result).toEqual([]);
   });

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FFprobeProcessError } from "../../error";
 import { runFFprobeCommand } from "../../libs/ffmpeg-executor";
+import { createFFprobeResultConvertdResult } from "../../utils/test-utils";
 import {
   buildFFprobeMetadataArgs,
   calcFFprobeFps,
@@ -22,26 +23,18 @@ beforeEach(() => {
 
 describe("convertFFprobeResult", () => {
   const validInput = `
-    codec_name=h264
-    codec_tag_string=avc1
+    codec_name=hevc
+    codec_tag_string=hev1
     width=1920
     height=1080
-    duration=60.5
-    bit_rate=5000000
-    avg_frame_rate=30/1
+    pix_fmt=yuv420p
+    duration=100
+    bits_per_raw_sample=8
   `;
 
   it("Verifies all fields are parsed correctly", () => {
     const result = convertFFprobeResult(validInput);
-    expect(result).toEqual({
-      codec_name: "h264",
-      codec_tag_string: "avc1",
-      width: 1920,
-      height: 1080,
-      duration: 60.5,
-      bit_rate: 5000000,
-      avg_frame_rate: 30,
-    });
+    expect(result).toEqual(createFFprobeResultConvertdResult());
   });
 
   it("Handles inputs containing empty lines", () => {
@@ -50,12 +43,28 @@ describe("convertFFprobeResult", () => {
       codec_tag_string=hvc1
       width=3840
       height=2160
+      pix_fmt=yuv420p
       duration=120
-      bit_rate=20000000
-      avg_frame_rate=60000/1001
+
+      bits_per_raw_sample=8
+
     `;
     const result = convertFFprobeResult(input);
     expect(result.height).toBe(2160);
+  });
+
+  it("Handles key= line without throw error", () => {
+    const input = `
+      codec_name=hevc
+      codec_tag_string=hvc1
+      width=3840
+      height=2160
+      pix_fmt=yuv420p
+      duration=120
+      bits_per_raw_sample=8
+      empty=
+    `;
+    expect(() => convertFFprobeResult(input)).not.toThrowError();
   });
 
   it("Missing required fields validation", () => {
@@ -64,7 +73,6 @@ describe("convertFFprobeResult", () => {
       width=1280
       height=720
       duration=30
-      bit_rate=256000
     `;
     expect(() => convertFFprobeResult(input)).toThrow(
       /Missing required fields/,
@@ -99,24 +107,16 @@ describe("getVideoMetadata", () => {
       "codec_tag_string=hev1",
       "width=1920",
       "height=1080",
-      "avg_frame_rate=24/1",
-      "duration=10.0",
-      "bit_rate=5",
+      "pix_fmt=yuv420p",
+      "duration=100",
+      "bits_per_raw_sample=8",
     ].join("\n");
     vi.mocked(runFFprobeCommand).mockResolvedValue({
       out: mockOutput,
       err: "",
     });
     const result = await getVideoMetadata("valid.mp4");
-    expect(result).toEqual({
-      codec_name: "hevc",
-      codec_tag_string: "hev1",
-      width: 1920,
-      height: 1080,
-      avg_frame_rate: 24,
-      duration: 10,
-      bit_rate: 5,
-    });
+    expect(result).toEqual(createFFprobeResultConvertdResult());
   });
 
   it("should return null when runFFprobeCommand throw error", async () => {

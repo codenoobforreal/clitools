@@ -69,9 +69,11 @@ export interface FFprobeResultConvertdResult {
   codec_tag_string: string;
   width: number;
   height: number;
-  avg_frame_rate: number;
+  pix_fmt: string;
+  // avg_frame_rate: number;
   duration: number;
-  bit_rate: number;
+  // bit_rate: number;
+  bits_per_raw_sample: number;
 }
 
 export type TaskType = (typeof TASK_TYPE)[number];

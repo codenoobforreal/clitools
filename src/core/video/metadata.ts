@@ -6,6 +6,7 @@ import {
 } from "../../error.js";
 import { runFFprobeCommand } from "../../libs/ffmpeg-executor.js";
 import type { FFprobeResultConvertdResult } from "../../types.js";
+import { tryConvertStringToNumber } from "../../utils/basic-convert.js";
 import { FFprobeCommandBuilder } from "../ffmpeg/command-builder.js";
 
 export async function getVideoMetadata(
@@ -32,22 +33,24 @@ export function convertFFprobeResult(
     "codec_tag_string",
     "width",
     "height",
+    "pix_fmt",
+    // "avg_frame_rate",
     "duration",
-    "bit_rate",
-    "avg_frame_rate",
+    // "bit_rate",
+    "bits_per_raw_sample",
   ]);
 
   const parseKeyValue = (line: string): [string, string] => {
     const eqIndex = line.indexOf("=");
-    if (eqIndex === -1 || eqIndex === 0 || eqIndex === line.length - 1) {
+    if (eqIndex === -1 || eqIndex === 0) {
       throw new KVError("Invalid key-value format", line);
     }
     return [line.slice(0, eqIndex), line.slice(eqIndex + 1)];
   };
 
   const validateNumber = (value: string, key: string): number => {
-    const num = Number(value);
-    if (!value.trim() || Number.isNaN(num)) {
+    const num = tryConvertStringToNumber(value);
+    if (!num) {
       throw new StringToNumberCovertError(`Invalid ${key} value`, value);
     }
     return num;
@@ -62,6 +65,7 @@ export function convertFFprobeResult(
     switch (key) {
       case "codec_name":
       case "codec_tag_string":
+      case "pix_fmt":
         resultObject[key] = value;
         requiredFields.delete(key);
         break;
@@ -69,15 +73,20 @@ export function convertFFprobeResult(
       case "width":
       case "height":
       case "duration":
-      case "bit_rate":
+        // case "bit_rate":
         resultObject[key] = validateNumber(value, key);
         requiredFields.delete(key);
         break;
-
-      case "avg_frame_rate":
-        resultObject.avg_frame_rate = calcFFprobeFps(value);
-        requiredFields.delete("avg_frame_rate");
+      case "bits_per_raw_sample": {
+        resultObject[key] = tryConvertStringToNumber(value) ?? 8;
+        requiredFields.delete(key);
         break;
+
+        // case "avg_frame_rate":
+        //   resultObject.avg_frame_rate = calcFFprobeFps(value);
+        //   requiredFields.delete("avg_frame_rate");
+        //   break;
+      }
     }
   }
 

@@ -3,6 +3,7 @@ import { getVideoInfoListFromUserInput } from "../../core/video/pipeline.js";
 import { FFmpegProcessError } from "../../error.js";
 import { runFFmpegCommand } from "../../libs/ffmpeg-executor.js";
 import type { EncodeVideoTaskProps, VideoInfo } from "../../types.js";
+import { getFileNameFromPath } from "../../utils/path.js";
 import { createProgressHandler } from "../cli/progress-handler.js";
 import { buildFFmpegEncodeVideoArgs } from "./args.js";
 
@@ -22,11 +23,16 @@ async function encodeVideo(
   length: number,
 ) {
   const s = spinner();
-  s.start(`Encoding: ${videoInfo.input}`);
+  const filename = getFileNameFromPath(videoInfo.input);
+  s.start(`Preparing FFmpeg staff`);
   try {
     await runFFmpegCommand(
       buildFFmpegEncodeVideoArgs(videoInfo),
-      createProgressHandler(videoInfo.metadata.duration),
+      createProgressHandler(videoInfo.metadata.duration, {
+        message: (msg?: string) => {
+          s.message(`Encoding ${filename}: ${msg}`);
+        },
+      }),
     );
     s.stop(`Finish encoding ${index + 1}/${length}:\n${videoInfo.input}`);
   } catch (error) {

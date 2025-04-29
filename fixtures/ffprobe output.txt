@@ -22,7 +22,9 @@ film_grain=0
 has_b_frames=2
 sample_aspect_ratio=1:1
 display_aspect_ratio=1280:681
+
 pix_fmt=yuv420p
+
 level=180
 color_range=tv
 color_space=bt709
@@ -43,7 +45,9 @@ duration_ts=75264
 duration=5.880000
 bit_rate=19354759
 max_bit_rate=N/A
+
 bits_per_raw_sample=N/A
+
 nb_frames=147
 nb_read_frames=N/A
 nb_read_packets=N/A
