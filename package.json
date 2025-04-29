@@ -1,6 +1,6 @@
 {
   "name": "@codenoobforreal/clitools",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "CLI tool for video processing (H.265/HEVC encoding & QuickTime compatibility) using FFmpeg, and batch lossless image compression with format preservation",
   "keywords": [
     "cli-tool",
