@@ -33,7 +33,7 @@ export class KVError extends MyError {
   }
 }
 
-export class StringToNumberCovertError extends MyError {
+export class StringToNumberConvertError extends MyError {
   public value: string;
   constructor(message: string, value: string) {
     super(message);

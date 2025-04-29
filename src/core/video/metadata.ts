@@ -2,7 +2,7 @@ import {
   FFprobeProcessError,
   KVError,
   RequiredFieldError,
-  StringToNumberCovertError,
+  StringToNumberConvertError,
 } from "../../error.js";
 import { runFFprobeCommand } from "../../libs/ffmpeg-executor.js";
 import type { FFprobeResultConvertdResult } from "../../types.js";
@@ -51,7 +51,7 @@ export function convertFFprobeResult(
   const validateNumber = (value: string, key: string): number => {
     const num = tryConvertStringToNumber(value);
     if (!num) {
-      throw new StringToNumberCovertError(`Invalid ${key} value`, value);
+      throw new StringToNumberConvertError(`Invalid ${key} value`, value);
     }
     return num;
   };

@@ -16,6 +16,7 @@ export function buildFFmpegEncodeVideoArgs({
   return new FFmpegH265CommandBuilder()
     .addProgressReporting()
     .addInput(input)
+    .setPixFmt(pix_fmt)
     .setLogLevel()
     .setProfileByPixFmt(pix_fmt)
     .setInputDepth(bits_per_raw_sample)

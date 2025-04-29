@@ -40,7 +40,7 @@ export class FFmpegCommandBuilder {
   }
 
   setPixFmt(fmt: string = "yuv420p"): this {
-    this.outputOptions.push("pix_fmt", fmt);
+    this.outputOptions.push("-pix_fmt", fmt);
     return this;
   }
 

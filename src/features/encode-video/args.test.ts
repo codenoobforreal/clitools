@@ -19,6 +19,7 @@ describe("buildFFmpegEncodeVideoArgs", () => {
     );
     expect(resultString).toMatch(/-i input.mp4/);
     expect(resultString).toMatch(/-c:v libx265/);
+    expect(resultString).toMatch(/-pix_fmt yuv420p/);
     expect(resultString).toMatch(
       /-x265-params log-level=error:profile=main:input-depth=8/,
     );
@@ -35,26 +36,27 @@ describe("buildFFmpegEncodeVideoArgs", () => {
         pix_fmt: "yuv420p10le",
       },
     });
-    expect(buildFFmpegEncodeVideoArgs(config).join(" ")).toMatch(
-      /profile=main10/,
-    );
+    let resultString = buildFFmpegEncodeVideoArgs(config).join(" ");
+    expect(resultString).toMatch(/profile=main10/);
+    expect(resultString).toMatch(/-pix_fmt yuv420p10le/);
 
     config = createVideoInfo({
       metadata: {
         pix_fmt: "yuv422p10le",
       },
     });
-    expect(buildFFmpegEncodeVideoArgs(config).join(" ")).toMatch(
-      /profile=main422-10/,
-    );
+    resultString = buildFFmpegEncodeVideoArgs(config).join(" ");
+    expect(resultString).toMatch(/profile=main422-10/);
+    expect(resultString).toMatch(/-pix_fmt yuv422p10le/);
 
     config = createVideoInfo({
       metadata: {
         pix_fmt: "yuv444p10le",
       },
     });
-    expect(buildFFmpegEncodeVideoArgs(config).join(" ")).toMatch(
-      /profile=main444-10/,
-    );
+
+    resultString = buildFFmpegEncodeVideoArgs(config).join(" ");
+    expect(resultString).toMatch(/profile=main444-10/);
+    expect(resultString).toMatch(/-pix_fmt yuv444p10le/);
   });
 });
