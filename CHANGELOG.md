@@ -1,5 +1,11 @@
 # @codenoobforreal/clitools
 
+## 0.5.1
+
+### Patch Changes
+
+- 50bfee5: add flv,m4v,dash video format support
+
 ## 0.5.0
 
 ### Minor Changes
